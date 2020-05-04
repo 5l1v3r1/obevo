@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Date-Revision-yyyymmdd" content="20200504" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>Obevo &#x2013; Developer Guide</title>
+    <title>Obevo &#x2013; Rebaselining CHANGE entries in your table files</title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.6.min.css" />
     <link rel="stylesheet" href="./css/site.css" />
     <link rel="stylesheet" href="./css/print.css" media="print" />
@@ -129,7 +129,7 @@
       <div id="breadcrumbs">
         <ul class="breadcrumb">
         <li class=""><a href="./" title="Obevo">Obevo</a><span class="divider">/</span></li>
-    <li class="active ">Developer Guide</li>
+    <li class="active ">Rebaselining CHANGE entries in your table files</li>
         <li id="publishDate" class="pull-right"><span class="divider">|</span> Last Published: 2020-05-04</li>
           <li id="projectVersion" class="pull-right">Version: local-SNAPSHOT</li>
         </ul>
@@ -163,7 +163,8 @@
     <li><a href="orm-integration.html" title="ORM Integration"><span class="none"></span>ORM Integration</a>  </li>
     <li><a href="baseline-validation.html" title="Baseline DDL Validation"><span class="none"></span>Baseline DDL Validation</a>  </li>
     <li><a href="phased-deployments.html" title="Phased Deployments"><span class="none"></span>Phased Deployments</a>  </li>
-    <li><a href="incremental-change-code-cleanup.html" title="Incremental Change Code Cleanup"><span class="none"></span>Incremental Change Code Cleanup</a>  </li>
+    <li class="active"><a href="#"><span class="none"></span>Incremental Change Code Cleanup</a>
+  </li>
           <li class="nav-header">Platform-Specific Details</li>
     <li><a href="platform-listing.html" title="Platform Listing"><span class="none"></span>Platform Listing</a>  </li>
     <li><a href="db2-notes.html" title="DB2"><span class="none"></span>DB2</a>  </li>
@@ -184,8 +185,7 @@
     <li><a href="legacy-onboarding-guide.html" title="Legacy Onboarding - Legacy Systems"><span class="none"></span>Legacy Onboarding - Legacy Systems</a>  </li>
     <li><a href="db-merge-tool.html" title="DB Merge Tool"><span class="none"></span>DB Merge Tool</a>  </li>
           <li class="nav-header">Developer Information</li>
-    <li class="active"><a href="#"><span class="icon-chevron-down"></span>Developer Guide</a>
-
+    <li><a href="developer-guide.html" title="Developer Guide"><span class="icon-chevron-down"></span>Developer Guide</a>
       <ul class="nav nav-list">
     <li><a href="dev-setup-docker.html" title="Docker-based Test DB Setup"><span class="none"></span>Docker-based Test DB Setup</a>  </li>
     <li><a href="dev-setup-amazon.html" title="Amazon RDS DB Setup"><span class="none"></span>Amazon RDS DB Setup</a>  </li>
@@ -221,175 +221,141 @@
     specific language governing permissions and limitations
     under the License.
 
---><h1>Developer Guide</h1>
+--><h1>Rebaselining CHANGE entries in your table files</h1>
+
+<ul>
+<li><a href="#Use_Case_Details">Use Case Details</a></li>
+<li><a href="#High_Level_Steps_To_Execute">High Level Steps To Execute</a></li>
+<li><a href="#Example">Example</a></li>
+<li><a href="#Potential_Improvements_on_the_existing_approach">Potential Improvements on the existing approach</a></li>
+<li><a href="#How_to_update_your_Obevo_db_file_if_you_have_to_do_a_manual_SQL_change_without_a_release_not_that_you_should_try_this">How to update your Obevo db file if you have to do a manual SQL change without a release (not that you should try this)</a></li></ul>
+<p>The key Obevo rule for handling incremental object types (e.g. tables with //// CHANGE) is to never modify/delete an already deployed change. There are exceptional cases where you may want to do this for the purposes of code cleanup. This page describes how to do those cleanups.</p>
 <div class="section">
-<h2><a name="Quick_Code_Walkthrough__Key_Classes:"></a>Quick Code Walkthrough + Key Classes:</h2>
-<p>First, read through these:</p>
+<div class="section">
+<h3><a name="Use_Case_Details"></a>Use Case Details</h3>
+<p>For table files and changes - as Obevo requires that all new changes are additions to the file, this file may end up being pretty long (see the section below (to be written) on the justifications for this).</p>
+<p>At some point, your team may want to &#x201c;rebaseline&#x201d; your table change file, i.e. get rid of all the old individual changes in the file and replace the content w/ the latest version of the table, so that any changes going forward (and all people reading the db files) can look at the cleaner latest view instead.</p></div>
+<div class="section">
+<h3><a name="High_Level_Steps_To_Execute"></a>High Level Steps To Execute</h3>
+<p>To do this for a particular table file, you must:</p>
 
 <ol style="list-style-type: decimal">
   
-<li><a href="design-walkthrough.html">Design Walkthrough</a> to understand what the tool is trying to do and how</li>
+<li>Get the list of change names currently in your file</li>
   
-<li><a href="java-api.html">Java API</a> to see the module structure and understand the tool from a client perspective</li>
-</ol>
-<p>Pay special attention to the &#x201c;Developer Guide note&#x201d; mentions in the Design Walkthrough to see how the design maps to the code.</p></div>
+<li>Create a new //// CHANGE entry, with a new change name and the additional attribute &#x201c;baselinedChanges=chng1,chng2,chng3&#x201d; with your change names comma-separted</li>
+  
+<li>Add your new baselined sql under this change and delete the rest</li>
+</ol></div>
 <div class="section">
-<h2><a name="Getting_started_with_coding"></a>Getting started with coding</h2>
-<p>Try out any of the unit tests and ITs in the DBMS-specific modules or the scenario test modules.</p>
-<p>These will typically invoke deployments against actual DBs and vet that the results in the DB are correct.</p>
-<p>You can use these to see the full code path executed and trace through as you need to.</p></div>
+<h3><a name="Example"></a>Example</h3>
+<p>Note - you can also check out <a href="$%7Bsource.webroot%7D/obevo-db-impls/obevo-db-scenario-tests/src/test/resources/scenariotests/baseline-scenario">the example</a> in the source code - the snippets below are similar examples. The different step folders represent the evolution of the table</p>
+<p>Step 1 - let&#x2019;s say that you start w/ a table like so:</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">//// CHANGE name=chng1
+CREATE TABLE TABLE_A (
+    A_ID INT NOT NULL,
+    B_ID INT NULL
+)
+GO
+
+//// CHANGE FK name=fkChange
+ALTER TABLE TABLE_A ADD FOREIGN KEY (B_ID) REFERENCES TABLE_B(B_ID)
+GO
+
+//// CHANGE name=index
+CREATE INDEX TABLE_A_IND1 ON TABLE_A (A_ID, B_ID)
+
+//// CHANGE name=chng2
+ALTER TABLE TABLE_A ADD COLUMN C_ID INT NULL
+GO
+
+//// CHANGE name=chng3
+ALTER TABLE TABLE_A ADD COLUMN D_ID INT NULL
+GO
+</pre></div></div>
+<p>And let&#x2019;s say that you want to rebaseline this to look like the latest version, e.g. with the columns C and D already added:</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">CREATE TABLE TABLE_A (
+    A_ID INT NOT NULL,
+    B_ID INT NULL,
+    C_ID INT NULL,
+    D_ID INT NULL
+)
+GO
+
+ALTER TABLE TABLE_A ADD FOREIGN KEY (B_ID) REFERENCES TABLE_B(B_ID)
+GO
+
+CREATE INDEX TABLE_A_IND1 ON TABLE_A (A_ID, B_ID)
+GO
+</pre></div></div>
+<p>Step 2 - collect the changes to rebaseline: Note that the names of the changes are chng1, chng2, chng3, index - we want to combine these into one. (the foreign key needs to be separate so that it can be deployed separately due to the ordering algorithm.</p>
+<p>The resulting file would look as follows:</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">//// CHANGE name=rebaselined baselinedChanges=chng1,chng2,chng3,index
+CREATE TABLE TABLE_A (
+    A_ID INT NOT NULL,
+    B_ID INT NULL,
+    C_ID INT NULL,
+    D_ID INT NULL
+)
+GO
+
+CREATE INDEX TABLE_A_IND1 ON TABLE_A (A_ID, B_ID)
+GO
+
+//// CHANGE FK name=fkChange
+ALTER TABLE TABLE_A ADD FOREIGN KEY (B_ID) REFERENCES TABLE_B(B_ID)
+GO
+</pre></div></div>
+<p>Step 3 - Perform a deployment that includes this file change. The deployment will be a no-op for the physical table, but the audit table will reflect the changes in your baseline</p>
+<p>Step 4 - Once you&#x2019;ve done a deploy to all your environments and thus removed the original change entries in your audit table, you can safely delete the baselinedChanges attribute, e.g.</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">//// CHANGE name=rebaselined baselinedChanges=chng1,chng2,chng3,index
+CREATE TABLE TABLE_A (
+    A_ID INT NOT NULL,
+    B_ID INT NULL,
+    C_ID INT NULL,
+    D_ID INT NULL
+)
+GO
+
+CREATE INDEX TABLE_A_IND1 ON TABLE_A (A_ID, B_ID)
+GO
+
+//// CHANGE FK name=fkChange
+ALTER TABLE TABLE_A ADD FOREIGN KEY (B_ID) REFERENCES TABLE_B(B_ID)
+GO
+</pre></div></div></div>
 <div class="section">
-<h2><a name="Setup_a_test_database_for_development"></a>Setup a test database for development</h2>
-<p>Obevo defines a few common integation tests that DBMS implementations should use:</p>
+<h3><a name="Potential_Improvements_on_the_existing_approach"></a>Potential Improvements on the existing approach</h3>
+<p>Now that you have done this - great, now you have a much smaller baselined file!</p>
+<p>However, one issue we&#x2019;d like to improve in this process: how did you come up with that rebaselined sql?</p>
 
 <ul>
   
-<li>AbstractDbMetadataManagerIT and subclasses: Tests the DB Metadata API and retrieval</li>
+<li>Did you re-query it from the database, or figure it out yourself?</li>
   
-<li>SameSchemaChangeAuditDaoTest and subclasses: Tests the execution and upgrades of the Change Audit tables</li>
-  
-<li>*Deploy*IT: Tests end-to-end deployments</li>
+<li>How do you truly know that your rebaselined SQL matches the CHANGEs that you used to deploy this in the first place?</li>
 </ul>
-<p>These tests require live DBs to execute against. In case you don&#x2019;t already have databases to execute against and would like to develop, we have guidance on how to do so, whether via Amazon RDS or via installing express editions of the DBMS software.</p>
-<p>See the table below for how to setup these dates.</p>
-
-<table border="0" class="table table-striped">
-  <thead>
-    
-<tr class="a">
-      
-<th>Vendor</th>
-      
-<th>Test Locale</th>
-    </tr>
-  </thead>
-  <tbody>
-    
-<tr class="b">
-      
-<td>Sybase/SAP ASE</td>
-      
-<td><a href="dev-setup-sybase-ase.html">ASE Express Setup</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>DB2</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for DB2 Express</a></td>
-    </tr>
-    
-<tr class="b">
-      
-<td>MS SQL Server</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for SQL Server</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>Oracle</td>
-      
-<td><a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="b">
-      
-<td>PostgreSQL</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for PostgreSQL</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>Sybase/SAP IQ</td>
-      
-<td>No instructions available yet</td>
-    </tr>
-    
-<tr class="b">
-      
-<td>H2</td>
-      
-<td>No setup needed (in-memory DB)</td>
-    </tr>
-    
-<tr class="a">
-      
-<td>HSQLDB</td>
-      
-<td>No setup needed (in-memory DB)</td>
-    </tr>
-  </tbody>
-</table></div>
-<div class="section">
-<h2><a name="Adding_a_new_DBMS_implementation"></a>Adding a new DBMS implementation</h2>
-<div class="section">
-<div class="section">
-<h4><a name="a1._Create_a_new_module_obevo-db-dbmsName"></a>1. Create a new module obevo-db-&lt;dbmsName&gt;</h4>
-<p>You can use an existing DB implementation module as reference.</p>
-<p>See the <a href="platform-listing.html">Platform Listing</a> for the full list of modules.</p>
-<p>We recommend obevo-db-postgresql as a default choice if you need a suggestion.</p>
-<p>Rename only the package and the poms for now, i.e. don&#x2019;t yet rename the classes; we will get to those later</p>
-<p>Also add your project as a dependency to the obevo-db-client-all-dbs module.</p>
-<p>Add entry to default.yaml in com.gs.obevo.db.confg in obevo-db</p>
-<p>Rename platform name accordingly in &lt;YourPlatform&gt;DbPlatform</p></div>
-<div class="section">
-<h4><a name="a2._Setup_a_test_database"></a>2. Setup a test database</h4>
-<p>Option 1 (preferred): Docker search dockerhub for examples; you have plenty here</p>
-<p>1) add setup-docker-mongodb.sh file. ensure that your db can start</p>
-<p>2) add build profile to the pom</p>
-<p>Option 2: Amazon RDS See CreateDbInstance for using an API to create your database The only database currently using this is the Redshift platform (currently housed in postgres) Your own method:</p></div>
-<div class="section">
-<h4><a name="a3._determine_where_your_JDBC_driver_comes_from_and_add_it_to_the_project"></a>3. determine where your JDBC driver comes from and add it to the project</h4>
-
-<ul>
-  
-<li>preferably from Maven central. If so, then check the license:</li>
-  
-<li>if compatible w/ Apache license (e.g. Apache, MIT, BSD, EPL), then add it</li>
-  
-<li>if not compatible (e.g. GPL, LGPL), then make it optional as we don&#x2019;t want this included by default</li>
-  
-<li>sometimes needs a special Maven repo. see the oracle example for that (TBD)</li>
-  
-<li>sometimes is only within the docker container itself. see db2 example for that</li>
-</ul></div>
-<div class="section">
-<h4><a name="a4._Create_and_setup_a_blank_DB_schema_to_run_your_tests_against"></a>4. Create and setup a blank DB schema to run your tests against</h4>
-<p>Obevo will run tests against actual DBMSs that have schemas dedicated to Obevo. Get a schema to facilitate your testing</p>
-<p>As a convention, name your schemas as dbdeploy01, dbdeploy02, dbdeploy03. * dbdeploy01 and dbdeploy02 are typically for testing your deployments * dbdeploy03 is for the metadata API tests</p></div>
-<div class="section">
-<h4><a name="a5._Setup_your_initial_test_files"></a>5. Setup your initial test files</h4>
-<p>First, update the docker-*-creds.yaml file accordingly to the DB you just setup</p>
-<p>Next, under platforms.&lt;yourplatform&gt;.example1.step1, let&#x2019;s start simple with just the table (rename the other folders for now)</p></div>
-<div class="section">
-<h4><a name="a6._Implement_the_classes_required_to_do_a_basic_incremental_deployment_for_simple_objects_like_tables"></a>6. Implement the classes required to do a basic incremental deployment for simple objects like tables</h4>
-<p>First, remove / comment the optional classes: * anything under change types * Lock classes * TranslationDialect classes</p>
-<p>The main classes you will need to implement: * &lt;PlatformName&gt;DbPlatform * &lt;PlatformName&gt;AppContext * &lt;PlatformName&gt;EnvironmentInfraSetup  * add code for programmatically creating schemas/groups/users, etc * &lt;PlatformName&gt;JdbcDataSourceFactory  * add the semantics for generating jdbc urls * &lt;PlatformName&gt;SqlExecutor  * here you will add the commands to switch between schemas</p>
-<p>Also implement a DbMetadataDialect for your new implementation in obevo-db-metadata-manager-impl</p>
-<p>Start w/ tables for now; we will get to stored procedures/views/etc. later</p></div>
-<div class="section">
-<h4><a name="a7._Get_the_integration_test_running_for_the_simple_example"></a>7. Get the integration test running for the simple example</h4>
-<p>Follow the examples, e.g. PostgreSqlDeployerIT Most examples will have a &#x201c;step1&#x201d; and &#x201c;step2&#x201d; - the idea is to do the initial deployment and then a subsequent update so that you can vet both cases.</p></div>
-<div class="section">
-<h4><a name="a8._Add_support_for_the_other_DB_Object_types"></a>8. Add support for the other DB Object types</h4>
-<p>e.g. stored procedures, views, static data etc.</p>
-<p>Also add the implementation for the DB Metadata Manager and the test</p></div>
-<div class="section">
-<h4><a name="a9._Add_the_-cleanFirst_command_to_your_test_to_vet_out_the_cleaning_command"></a>9. Add the -cleanFirst command to your test to vet out the cleaning command</h4>
-<p>Note that some of the DBMS types require specific sqls to query out the db objects that schemacrawler cannot get to. This would be declared in the *AppContext class if applicable.</p></div>
-<div class="section">
-<h4><a name="a10._Add_reverse-engineering_support"></a>10. Add reverse-engineering support</h4>
+<p>There are two potential things to try for here:</p>
 
 <ol style="list-style-type: decimal">
   
-<li>Run the steps in the user guide for reverse-engineering from Aqua</li>
+<li>A nice way to generate the rebaselined SQL (or to derive it from another authoritative source&#x2026;)</li>
   
-<li>Try the AquaRevengTest for your module to ensure that the code can get formatted into the right structure</li>
-  
-<li>Modify the code as needed to get it to work (most of the work is just in parsing the text for the object names, and at this point, hopefully should not require much changes at this point for new DBMS&#x2019;s)</li>
-</ol></div></div></div>
+<li>A programmatic way to compare the original changes vs. the baseline</li>
+</ol>
+<p>The next section goes through this</p></div>
+<div class="section">
+<h3><a name="How_to_update_your_Obevo_db_file_if_you_have_to_do_a_manual_SQL_change_without_a_release_not_that_you_should_try_this"></a>How to update your Obevo db file if you have to do a manual SQL change without a release (not that you should try this)</h3>
+<p>don&#x2019;t do it often! there are alternatives to doing it manually</p>
+<p>section to be written</p></div></div>
         </div>
       </div>
     </div>

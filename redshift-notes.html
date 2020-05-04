@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Date-Revision-yyyymmdd" content="20200504" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>Obevo &#x2013; Developer Guide</title>
+    <title>Obevo &#x2013; Amazon Redshift Usage Notes</title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.6.min.css" />
     <link rel="stylesheet" href="./css/site.css" />
     <link rel="stylesheet" href="./css/print.css" media="print" />
@@ -129,7 +129,7 @@
       <div id="breadcrumbs">
         <ul class="breadcrumb">
         <li class=""><a href="./" title="Obevo">Obevo</a><span class="divider">/</span></li>
-    <li class="active ">Developer Guide</li>
+    <li class="active ">Amazon Redshift Usage Notes</li>
         <li id="publishDate" class="pull-right"><span class="divider">|</span> Last Published: 2020-05-04</li>
           <li id="projectVersion" class="pull-right">Version: local-SNAPSHOT</li>
         </ul>
@@ -172,7 +172,8 @@
     <li><a href="mongodb-notes.html" title="MongoDB"><span class="none"></span>MongoDB</a>  </li>
     <li><a href="oracle-notes.html" title="Oracle"><span class="none"></span>Oracle</a>  </li>
     <li><a href="postgresql-notes.html" title="PostgreSQL"><span class="none"></span>PostgreSQL</a>  </li>
-    <li><a href="redshift-notes.html" title="Redshift"><span class="none"></span>Redshift</a>  </li>
+    <li class="active"><a href="#"><span class="none"></span>Redshift</a>
+  </li>
     <li><a href="sybase-ase-notes.html" title="SQL Server"><span class="none"></span>SQL Server</a>  </li>
     <li><a href="sybase-ase-notes.html" title="Sybase ASE"><span class="none"></span>Sybase ASE</a>  </li>
     <li><a href="general-db-notes.html" title="Sybase IQ"><span class="none"></span>Sybase IQ</a>  </li>
@@ -184,8 +185,7 @@
     <li><a href="legacy-onboarding-guide.html" title="Legacy Onboarding - Legacy Systems"><span class="none"></span>Legacy Onboarding - Legacy Systems</a>  </li>
     <li><a href="db-merge-tool.html" title="DB Merge Tool"><span class="none"></span>DB Merge Tool</a>  </li>
           <li class="nav-header">Developer Information</li>
-    <li class="active"><a href="#"><span class="icon-chevron-down"></span>Developer Guide</a>
-
+    <li><a href="developer-guide.html" title="Developer Guide"><span class="icon-chevron-down"></span>Developer Guide</a>
       <ul class="nav nav-list">
     <li><a href="dev-setup-docker.html" title="Docker-based Test DB Setup"><span class="none"></span>Docker-based Test DB Setup</a>  </li>
     <li><a href="dev-setup-amazon.html" title="Amazon RDS DB Setup"><span class="none"></span>Amazon RDS DB Setup</a>  </li>
@@ -221,175 +221,87 @@
     specific language governing permissions and limitations
     under the License.
 
---><h1>Developer Guide</h1>
+--><h1>Amazon Redshift Usage Notes</h1>
+<p>DB Type acronym for configurations: REDSHIFT</p>
 <div class="section">
-<h2><a name="Quick_Code_Walkthrough__Key_Classes:"></a>Quick Code Walkthrough + Key Classes:</h2>
-<p>First, read through these:</p>
+<h2><a name="JDBC_Driver_and_Distribution_Setup"></a>JDBC Driver and Distribution Setup</h2>
+<p>Amazon recommends using the Redshift JDBC Driver for connecting to the database.</p>
+<p>Due to the license for this driver (see <a class="externalLink" href="https://s3.amazonaws.com/redshift-downloads/drivers/Amazon+Redshift+JDBC+Driver+License+Agreement.pdf">here</a> and the <a class="externalLink" href="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection-with-maven.html">note at the end here</a>), Obevo cannot include this driver in its distributions.</p>
+<p>Instead:</p>
 
 <ol style="list-style-type: decimal">
   
-<li><a href="design-walkthrough.html">Design Walkthrough</a> to understand what the tool is trying to do and how</li>
+<li>Please <a class="externalLink" href="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html#download-jdbc-driver">obtain the jar from Amazon</a></li>
   
-<li><a href="java-api.html">Java API</a> to see the module structure and understand the tool from a client perspective</li>
-</ol>
-<p>Pay special attention to the &#x201c;Developer Guide note&#x201d; mentions in the Design Walkthrough to see how the design maps to the code.</p></div>
+<li>Add it to your copy of the Obevo distribution using the extension points available (see the <a href="setup.html">Setup Page</a> for more information).</li>
+</ol></div>
 <div class="section">
-<h2><a name="Getting_started_with_coding"></a>Getting started with coding</h2>
-<p>Try out any of the unit tests and ITs in the DBMS-specific modules or the scenario test modules.</p>
-<p>These will typically invoke deployments against actual DBs and vet that the results in the DB are correct.</p>
-<p>You can use these to see the full code path executed and trace through as you need to.</p></div>
-<div class="section">
-<h2><a name="Setup_a_test_database_for_development"></a>Setup a test database for development</h2>
-<p>Obevo defines a few common integation tests that DBMS implementations should use:</p>
+<h2><a name="PostgreSQL_Compatibility"></a>PostgreSQL Compatibility</h2>
+<p>The Redshift platform is based off PostgreSQL, but with a few differences per Amazon (<a class="externalLink" href="https://docs.aws.amazon.com/redshift/latest/dg/c_redshift-and-postgres-sql.html">link</a>).</p>
+<p>Though Amazon recommends using the Redshift JDBC Driver (thus requiring the JDBC URL start with jdbc:<a class="externalLink" href="redshift://)">redshift://)</a>, it also has some <a class="externalLink" href="https://docs.aws.amazon.com/redshift/latest/dg/c_redshift-postgres-jdbc.html">compatibility with PostgreSQL</a>, notably with PostgreSQL JDBC Driver versions 8.x, but not 9.x.</p>
+<p>Hence, it is possible to run Obevo against a Redshift instance as if it were PostgreSQL, e.g.</p>
 
 <ul>
   
-<li>AbstractDbMetadataManagerIT and subclasses: Tests the DB Metadata API and retrieval</li>
+<li>Specifying the type as POSTGRESQL in configs</li>
   
-<li>SameSchemaChangeAuditDaoTest and subclasses: Tests the execution and upgrades of the Change Audit tables</li>
+<li>Using the JDBC url with the prefix jdbc:postgresql://</li>
   
-<li>*Deploy*IT: Tests end-to-end deployments</li>
-</ul>
-<p>These tests require live DBs to execute against. In case you don&#x2019;t already have databases to execute against and would like to develop, we have guidance on how to do so, whether via Amazon RDS or via installing express editions of the DBMS software.</p>
-<p>See the table below for how to setup these dates.</p>
-
-<table border="0" class="table table-striped">
-  <thead>
-    
-<tr class="a">
-      
-<th>Vendor</th>
-      
-<th>Test Locale</th>
-    </tr>
-  </thead>
-  <tbody>
-    
-<tr class="b">
-      
-<td>Sybase/SAP ASE</td>
-      
-<td><a href="dev-setup-sybase-ase.html">ASE Express Setup</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>DB2</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for DB2 Express</a></td>
-    </tr>
-    
-<tr class="b">
-      
-<td>MS SQL Server</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for SQL Server</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>Oracle</td>
-      
-<td><a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="b">
-      
-<td>PostgreSQL</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for PostgreSQL</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>Sybase/SAP IQ</td>
-      
-<td>No instructions available yet</td>
-    </tr>
-    
-<tr class="b">
-      
-<td>H2</td>
-      
-<td>No setup needed (in-memory DB)</td>
-    </tr>
-    
-<tr class="a">
-      
-<td>HSQLDB</td>
-      
-<td>No setup needed (in-memory DB)</td>
-    </tr>
-  </tbody>
-</table></div>
-<div class="section">
-<h2><a name="Adding_a_new_DBMS_implementation"></a>Adding a new DBMS implementation</h2>
-<div class="section">
-<div class="section">
-<h4><a name="a1._Create_a_new_module_obevo-db-dbmsName"></a>1. Create a new module obevo-db-&lt;dbmsName&gt;</h4>
-<p>You can use an existing DB implementation module as reference.</p>
-<p>See the <a href="platform-listing.html">Platform Listing</a> for the full list of modules.</p>
-<p>We recommend obevo-db-postgresql as a default choice if you need a suggestion.</p>
-<p>Rename only the package and the poms for now, i.e. don&#x2019;t yet rename the classes; we will get to those later</p>
-<p>Also add your project as a dependency to the obevo-db-client-all-dbs module.</p>
-<p>Add entry to default.yaml in com.gs.obevo.db.confg in obevo-db</p>
-<p>Rename platform name accordingly in &lt;YourPlatform&gt;DbPlatform</p></div>
-<div class="section">
-<h4><a name="a2._Setup_a_test_database"></a>2. Setup a test database</h4>
-<p>Option 1 (preferred): Docker search dockerhub for examples; you have plenty here</p>
-<p>1) add setup-docker-mongodb.sh file. ensure that your db can start</p>
-<p>2) add build profile to the pom</p>
-<p>Option 2: Amazon RDS See CreateDbInstance for using an API to create your database The only database currently using this is the Redshift platform (currently housed in postgres) Your own method:</p></div>
-<div class="section">
-<h4><a name="a3._determine_where_your_JDBC_driver_comes_from_and_add_it_to_the_project"></a>3. determine where your JDBC driver comes from and add it to the project</h4>
-
-<ul>
-  
-<li>preferably from Maven central. If so, then check the license:</li>
-  
-<li>if compatible w/ Apache license (e.g. Apache, MIT, BSD, EPL), then add it</li>
-  
-<li>if not compatible (e.g. GPL, LGPL), then make it optional as we don&#x2019;t want this included by default</li>
-  
-<li>sometimes needs a special Maven repo. see the oracle example for that (TBD)</li>
-  
-<li>sometimes is only within the docker container itself. see db2 example for that</li>
+<li>Using the PostgreSQL JDBC Driver compatible with 8.x (but not 9.x)</li>
 </ul></div>
 <div class="section">
-<h4><a name="a4._Create_and_setup_a_blank_DB_schema_to_run_your_tests_against"></a>4. Create and setup a blank DB schema to run your tests against</h4>
-<p>Obevo will run tests against actual DBMSs that have schemas dedicated to Obevo. Get a schema to facilitate your testing</p>
-<p>As a convention, name your schemas as dbdeploy01, dbdeploy02, dbdeploy03. * dbdeploy01 and dbdeploy02 are typically for testing your deployments * dbdeploy03 is for the metadata API tests</p></div>
+<h2><a name="Sequences_not_supported"></a>Sequences not supported</h2>
+<p>Unlike PostgreSQL, Redshift does not support the sequence object type.</p></div>
 <div class="section">
-<h4><a name="a5._Setup_your_initial_test_files"></a>5. Setup your initial test files</h4>
-<p>First, update the docker-*-creds.yaml file accordingly to the DB you just setup</p>
-<p>Next, under platforms.&lt;yourplatform&gt;.example1.step1, let&#x2019;s start simple with just the table (rename the other folders for now)</p></div>
-<div class="section">
-<h4><a name="a6._Implement_the_classes_required_to_do_a_basic_incremental_deployment_for_simple_objects_like_tables"></a>6. Implement the classes required to do a basic incremental deployment for simple objects like tables</h4>
-<p>First, remove / comment the optional classes: * anything under change types * Lock classes * TranslationDialect classes</p>
-<p>The main classes you will need to implement: * &lt;PlatformName&gt;DbPlatform * &lt;PlatformName&gt;AppContext * &lt;PlatformName&gt;EnvironmentInfraSetup  * add code for programmatically creating schemas/groups/users, etc * &lt;PlatformName&gt;JdbcDataSourceFactory  * add the semantics for generating jdbc urls * &lt;PlatformName&gt;SqlExecutor  * here you will add the commands to switch between schemas</p>
-<p>Also implement a DbMetadataDialect for your new implementation in obevo-db-metadata-manager-impl</p>
-<p>Start w/ tables for now; we will get to stored procedures/views/etc. later</p></div>
-<div class="section">
-<h4><a name="a7._Get_the_integration_test_running_for_the_simple_example"></a>7. Get the integration test running for the simple example</h4>
-<p>Follow the examples, e.g. PostgreSqlDeployerIT Most examples will have a &#x201c;step1&#x201d; and &#x201c;step2&#x201d; - the idea is to do the initial deployment and then a subsequent update so that you can vet both cases.</p></div>
-<div class="section">
-<h4><a name="a8._Add_support_for_the_other_DB_Object_types"></a>8. Add support for the other DB Object types</h4>
-<p>e.g. stored procedures, views, static data etc.</p>
-<p>Also add the implementation for the DB Metadata Manager and the test</p></div>
-<div class="section">
-<h4><a name="a9._Add_the_-cleanFirst_command_to_your_test_to_vet_out_the_cleaning_command"></a>9. Add the -cleanFirst command to your test to vet out the cleaning command</h4>
-<p>Note that some of the DBMS types require specific sqls to query out the db objects that schemacrawler cannot get to. This would be declared in the *AppContext class if applicable.</p></div>
-<div class="section">
-<h4><a name="a10._Add_reverse-engineering_support"></a>10. Add reverse-engineering support</h4>
+<h2><a name="Use_late_binding_views_to_allow_views_to_be_recreated_without_affecting_dependent_objects"></a>Use &#x201c;late binding views&#x201d; to allow views to be recreated without affecting dependent objects</h2>
+<p>Let&#x2019;s take the use case of a view dependending on a table, and the table dropping a column. By the simplest syntax for creating a view, the table column drop will fail as Redshift will restrict such actions if a view depends on a table, even if the table does not actually refer to the column in the table. The command to drop the column could succeed if the CASCADE keyword was added, but that would force the view to be dropped as well, not a desirable result.</p>
+<p>To work through this, add the syntax &#x201c;WITH NO SCHEMA BINDING&#x201d; when creating the views, per the example below:</p>
 
-<ol style="list-style-type: decimal">
-  
-<li>Run the steps in the user guide for reverse-engineering from Aqua</li>
-  
-<li>Try the AquaRevengTest for your module to ensure that the code can get formatted into the right structure</li>
-  
-<li>Modify the code as needed to get it to work (most of the work is just in parsing the text for the object names, and at this point, hopefully should not require much changes at this point for new DBMS&#x2019;s)</li>
-</ol></div></div></div>
+<div class="source">
+<div class="source"><pre class="prettyprint">CREATE VIEW my_view AS SELECT col1 FROM dbdeploy01.my_table with no schema binding;
+</pre></div></div>
+<p>This allows late binding of the views, such that views can still work if they did not refer to the dropped column.</p>
+<p>See the <a class="externalLink" href="https://docs.aws.amazon.com/redshift/latest/dg/r_DROP_VIEW.html">drop syntax</a> and <a class="externalLink" href="https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_VIEW.html">create syntax</a> docs for more information.</p>
+<p>To see this use case in action, try out the SQL snippet below in an interactive SQL session connecting to Redshift using the DB query tool of your choice.</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">-- set the schema
+SET search_path TO dbdeploy01;
+
+-- drop the objects to prep the test
+drop view my_view;
+drop view my_view_star;
+drop view my_view_col2;
+drop table my_table;
+
+-- create and populate the table
+CREATE TABLE my_table ( col1  INT2 NOT NULL, col2 INT2 NOT NULL );
+insert into my_table values (1, 2);
+
+-- create the view w/ explicit col1 references
+CREATE VIEW my_view AS SELECT col1 FROM dbdeploy01.my_table with no schema binding;
+-- create the view w/ select *
+CREATE VIEW my_view_star AS SELECT * FROM dbdeploy01.my_table with no schema binding;
+-- create the view referring col2 as well
+CREATE VIEW my_view_col2 AS SELECT col1, col2 FROM dbdeploy01.my_table with no schema binding;
+
+-- note that the view creation needs explicit mention of the schema, as indicated in Redshift docs
+
+-- all selects should work fine
+SELECT * FROM my_view;
+SELECT * FROM my_view_star;  -- shows col1 and col2
+SELECT * FROM my_view_col2;
+
+-- now drop the column
+ALTER TABLE my_table DROP COLUMN col2;
+
+-- this select works fine, only shows col1
+SELECT * FROM my_view;
+-- this select works fine, only shows col1
+SELECT * FROM my_view_star;
+-- this will fail
+SELECT * FROM my_view_col2;
+</pre></div></div></div>
         </div>
       </div>
     </div>

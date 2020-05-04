@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Date-Revision-yyyymmdd" content="20200504" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>Obevo &#x2013; Developer Guide</title>
+    <title>Obevo &#x2013; Project Distribution Management</title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.6.min.css" />
     <link rel="stylesheet" href="./css/site.css" />
     <link rel="stylesheet" href="./css/print.css" media="print" />
@@ -129,7 +129,7 @@
       <div id="breadcrumbs">
         <ul class="breadcrumb">
         <li class=""><a href="./" title="Obevo">Obevo</a><span class="divider">/</span></li>
-    <li class="active ">Developer Guide</li>
+    <li class="active ">Project Distribution Management</li>
         <li id="publishDate" class="pull-right"><span class="divider">|</span> Last Published: 2020-05-04</li>
           <li id="projectVersion" class="pull-right">Version: local-SNAPSHOT</li>
         </ul>
@@ -184,8 +184,7 @@
     <li><a href="legacy-onboarding-guide.html" title="Legacy Onboarding - Legacy Systems"><span class="none"></span>Legacy Onboarding - Legacy Systems</a>  </li>
     <li><a href="db-merge-tool.html" title="DB Merge Tool"><span class="none"></span>DB Merge Tool</a>  </li>
           <li class="nav-header">Developer Information</li>
-    <li class="active"><a href="#"><span class="icon-chevron-down"></span>Developer Guide</a>
-
+    <li><a href="developer-guide.html" title="Developer Guide"><span class="icon-chevron-down"></span>Developer Guide</a>
       <ul class="nav nav-list">
     <li><a href="dev-setup-docker.html" title="Docker-based Test DB Setup"><span class="none"></span>Docker-based Test DB Setup</a>  </li>
     <li><a href="dev-setup-amazon.html" title="Amazon RDS DB Setup"><span class="none"></span>Amazon RDS DB Setup</a>  </li>
@@ -205,191 +204,11 @@
           </div>
         </div>
         <div id="bodyColumn"  class="span10" >
-<!--
-
-    Copyright 2017 Goldman Sachs.
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
-
---><h1>Developer Guide</h1>
 <div class="section">
-<h2><a name="Quick_Code_Walkthrough__Key_Classes:"></a>Quick Code Walkthrough + Key Classes:</h2>
-<p>First, read through these:</p>
-
-<ol style="list-style-type: decimal">
-  
-<li><a href="design-walkthrough.html">Design Walkthrough</a> to understand what the tool is trying to do and how</li>
-  
-<li><a href="java-api.html">Java API</a> to see the module structure and understand the tool from a client perspective</li>
-</ol>
-<p>Pay special attention to the &#x201c;Developer Guide note&#x201d; mentions in the Design Walkthrough to see how the design maps to the code.</p></div>
+<h2><a name="Overview"></a>Overview</h2><a name="Overview"></a>
+<p>The following is the distribution management information used by this project.</p>
 <div class="section">
-<h2><a name="Getting_started_with_coding"></a>Getting started with coding</h2>
-<p>Try out any of the unit tests and ITs in the DBMS-specific modules or the scenario test modules.</p>
-<p>These will typically invoke deployments against actual DBs and vet that the results in the DB are correct.</p>
-<p>You can use these to see the full code path executed and trace through as you need to.</p></div>
-<div class="section">
-<h2><a name="Setup_a_test_database_for_development"></a>Setup a test database for development</h2>
-<p>Obevo defines a few common integation tests that DBMS implementations should use:</p>
-
-<ul>
-  
-<li>AbstractDbMetadataManagerIT and subclasses: Tests the DB Metadata API and retrieval</li>
-  
-<li>SameSchemaChangeAuditDaoTest and subclasses: Tests the execution and upgrades of the Change Audit tables</li>
-  
-<li>*Deploy*IT: Tests end-to-end deployments</li>
-</ul>
-<p>These tests require live DBs to execute against. In case you don&#x2019;t already have databases to execute against and would like to develop, we have guidance on how to do so, whether via Amazon RDS or via installing express editions of the DBMS software.</p>
-<p>See the table below for how to setup these dates.</p>
-
-<table border="0" class="table table-striped">
-  <thead>
-    
-<tr class="a">
-      
-<th>Vendor</th>
-      
-<th>Test Locale</th>
-    </tr>
-  </thead>
-  <tbody>
-    
-<tr class="b">
-      
-<td>Sybase/SAP ASE</td>
-      
-<td><a href="dev-setup-sybase-ase.html">ASE Express Setup</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>DB2</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for DB2 Express</a></td>
-    </tr>
-    
-<tr class="b">
-      
-<td>MS SQL Server</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for SQL Server</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>Oracle</td>
-      
-<td><a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="b">
-      
-<td>PostgreSQL</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for PostgreSQL</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>Sybase/SAP IQ</td>
-      
-<td>No instructions available yet</td>
-    </tr>
-    
-<tr class="b">
-      
-<td>H2</td>
-      
-<td>No setup needed (in-memory DB)</td>
-    </tr>
-    
-<tr class="a">
-      
-<td>HSQLDB</td>
-      
-<td>No setup needed (in-memory DB)</td>
-    </tr>
-  </tbody>
-</table></div>
-<div class="section">
-<h2><a name="Adding_a_new_DBMS_implementation"></a>Adding a new DBMS implementation</h2>
-<div class="section">
-<div class="section">
-<h4><a name="a1._Create_a_new_module_obevo-db-dbmsName"></a>1. Create a new module obevo-db-&lt;dbmsName&gt;</h4>
-<p>You can use an existing DB implementation module as reference.</p>
-<p>See the <a href="platform-listing.html">Platform Listing</a> for the full list of modules.</p>
-<p>We recommend obevo-db-postgresql as a default choice if you need a suggestion.</p>
-<p>Rename only the package and the poms for now, i.e. don&#x2019;t yet rename the classes; we will get to those later</p>
-<p>Also add your project as a dependency to the obevo-db-client-all-dbs module.</p>
-<p>Add entry to default.yaml in com.gs.obevo.db.confg in obevo-db</p>
-<p>Rename platform name accordingly in &lt;YourPlatform&gt;DbPlatform</p></div>
-<div class="section">
-<h4><a name="a2._Setup_a_test_database"></a>2. Setup a test database</h4>
-<p>Option 1 (preferred): Docker search dockerhub for examples; you have plenty here</p>
-<p>1) add setup-docker-mongodb.sh file. ensure that your db can start</p>
-<p>2) add build profile to the pom</p>
-<p>Option 2: Amazon RDS See CreateDbInstance for using an API to create your database The only database currently using this is the Redshift platform (currently housed in postgres) Your own method:</p></div>
-<div class="section">
-<h4><a name="a3._determine_where_your_JDBC_driver_comes_from_and_add_it_to_the_project"></a>3. determine where your JDBC driver comes from and add it to the project</h4>
-
-<ul>
-  
-<li>preferably from Maven central. If so, then check the license:</li>
-  
-<li>if compatible w/ Apache license (e.g. Apache, MIT, BSD, EPL), then add it</li>
-  
-<li>if not compatible (e.g. GPL, LGPL), then make it optional as we don&#x2019;t want this included by default</li>
-  
-<li>sometimes needs a special Maven repo. see the oracle example for that (TBD)</li>
-  
-<li>sometimes is only within the docker container itself. see db2 example for that</li>
-</ul></div>
-<div class="section">
-<h4><a name="a4._Create_and_setup_a_blank_DB_schema_to_run_your_tests_against"></a>4. Create and setup a blank DB schema to run your tests against</h4>
-<p>Obevo will run tests against actual DBMSs that have schemas dedicated to Obevo. Get a schema to facilitate your testing</p>
-<p>As a convention, name your schemas as dbdeploy01, dbdeploy02, dbdeploy03. * dbdeploy01 and dbdeploy02 are typically for testing your deployments * dbdeploy03 is for the metadata API tests</p></div>
-<div class="section">
-<h4><a name="a5._Setup_your_initial_test_files"></a>5. Setup your initial test files</h4>
-<p>First, update the docker-*-creds.yaml file accordingly to the DB you just setup</p>
-<p>Next, under platforms.&lt;yourplatform&gt;.example1.step1, let&#x2019;s start simple with just the table (rename the other folders for now)</p></div>
-<div class="section">
-<h4><a name="a6._Implement_the_classes_required_to_do_a_basic_incremental_deployment_for_simple_objects_like_tables"></a>6. Implement the classes required to do a basic incremental deployment for simple objects like tables</h4>
-<p>First, remove / comment the optional classes: * anything under change types * Lock classes * TranslationDialect classes</p>
-<p>The main classes you will need to implement: * &lt;PlatformName&gt;DbPlatform * &lt;PlatformName&gt;AppContext * &lt;PlatformName&gt;EnvironmentInfraSetup  * add code for programmatically creating schemas/groups/users, etc * &lt;PlatformName&gt;JdbcDataSourceFactory  * add the semantics for generating jdbc urls * &lt;PlatformName&gt;SqlExecutor  * here you will add the commands to switch between schemas</p>
-<p>Also implement a DbMetadataDialect for your new implementation in obevo-db-metadata-manager-impl</p>
-<p>Start w/ tables for now; we will get to stored procedures/views/etc. later</p></div>
-<div class="section">
-<h4><a name="a7._Get_the_integration_test_running_for_the_simple_example"></a>7. Get the integration test running for the simple example</h4>
-<p>Follow the examples, e.g. PostgreSqlDeployerIT Most examples will have a &#x201c;step1&#x201d; and &#x201c;step2&#x201d; - the idea is to do the initial deployment and then a subsequent update so that you can vet both cases.</p></div>
-<div class="section">
-<h4><a name="a8._Add_support_for_the_other_DB_Object_types"></a>8. Add support for the other DB Object types</h4>
-<p>e.g. stored procedures, views, static data etc.</p>
-<p>Also add the implementation for the DB Metadata Manager and the test</p></div>
-<div class="section">
-<h4><a name="a9._Add_the_-cleanFirst_command_to_your_test_to_vet_out_the_cleaning_command"></a>9. Add the -cleanFirst command to your test to vet out the cleaning command</h4>
-<p>Note that some of the DBMS types require specific sqls to query out the db objects that schemacrawler cannot get to. This would be declared in the *AppContext class if applicable.</p></div>
-<div class="section">
-<h4><a name="a10._Add_reverse-engineering_support"></a>10. Add reverse-engineering support</h4>
-
-<ol style="list-style-type: decimal">
-  
-<li>Run the steps in the user guide for reverse-engineering from Aqua</li>
-  
-<li>Try the AquaRevengTest for your module to ensure that the code can get formatted into the right structure</li>
-  
-<li>Modify the code as needed to get it to work (most of the work is just in parsing the text for the object names, and at this point, hopefully should not require much changes at this point for new DBMS&#x2019;s)</li>
-</ol></div></div></div>
+<h3><a name="Snapshot_Repository_-_ossrh"></a>Snapshot Repository - ossrh</h3><a name="Snapshot_Repository_-_ossrh"></a><a class="externalLink" href="https://oss.sonatype.org/content/repositories/snapshots">https://oss.sonatype.org/content/repositories/snapshots</a></div></div>
         </div>
       </div>
     </div>

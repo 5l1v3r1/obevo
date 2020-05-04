@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Date-Revision-yyyymmdd" content="20200504" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>Obevo &#x2013; Developer Guide</title>
+    <title>Obevo &#x2013; Java API</title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.6.min.css" />
     <link rel="stylesheet" href="./css/site.css" />
     <link rel="stylesheet" href="./css/print.css" media="print" />
@@ -129,7 +129,7 @@
       <div id="breadcrumbs">
         <ul class="breadcrumb">
         <li class=""><a href="./" title="Obevo">Obevo</a><span class="divider">/</span></li>
-    <li class="active ">Developer Guide</li>
+    <li class="active ">Java API</li>
         <li id="publishDate" class="pull-right"><span class="divider">|</span> Last Published: 2020-05-04</li>
           <li id="projectVersion" class="pull-right">Version: local-SNAPSHOT</li>
         </ul>
@@ -150,7 +150,8 @@
     <li><a href="error-handling.html" title="Error-Handling"><span class="none"></span>Error-Handling</a>  </li>
           <li class="nav-header">API Documentation</li>
     <li><a href="command-line-api.html" title="Command-line API"><span class="none"></span>Command-line API</a>  </li>
-    <li><a href="java-api.html" title="Java API"><span class="none"></span>Java API</a>  </li>
+    <li class="active"><a href="#"><span class="none"></span>Java API</a>
+  </li>
     <li><a href="maven-api.html" title="Maven plugin API"><span class="none"></span>Maven plugin API</a>  </li>
     <li><a href="gradle-api.html" title="Gradle API"><span class="none"></span>Gradle API</a>  </li>
           <li class="nav-header">Advanced Topics</li>
@@ -184,8 +185,7 @@
     <li><a href="legacy-onboarding-guide.html" title="Legacy Onboarding - Legacy Systems"><span class="none"></span>Legacy Onboarding - Legacy Systems</a>  </li>
     <li><a href="db-merge-tool.html" title="DB Merge Tool"><span class="none"></span>DB Merge Tool</a>  </li>
           <li class="nav-header">Developer Information</li>
-    <li class="active"><a href="#"><span class="icon-chevron-down"></span>Developer Guide</a>
-
+    <li><a href="developer-guide.html" title="Developer Guide"><span class="icon-chevron-down"></span>Developer Guide</a>
       <ul class="nav nav-list">
     <li><a href="dev-setup-docker.html" title="Docker-based Test DB Setup"><span class="none"></span>Docker-based Test DB Setup</a>  </li>
     <li><a href="dev-setup-amazon.html" title="Amazon RDS DB Setup"><span class="none"></span>Amazon RDS DB Setup</a>  </li>
@@ -221,175 +221,376 @@
     specific language governing permissions and limitations
     under the License.
 
---><h1>Developer Guide</h1>
-<div class="section">
-<h2><a name="Quick_Code_Walkthrough__Key_Classes:"></a>Quick Code Walkthrough + Key Classes:</h2>
-<p>First, read through these:</p>
-
-<ol style="list-style-type: decimal">
-  
-<li><a href="design-walkthrough.html">Design Walkthrough</a> to understand what the tool is trying to do and how</li>
-  
-<li><a href="java-api.html">Java API</a> to see the module structure and understand the tool from a client perspective</li>
-</ol>
-<p>Pay special attention to the &#x201c;Developer Guide note&#x201d; mentions in the Design Walkthrough to see how the design maps to the code.</p></div>
-<div class="section">
-<h2><a name="Getting_started_with_coding"></a>Getting started with coding</h2>
-<p>Try out any of the unit tests and ITs in the DBMS-specific modules or the scenario test modules.</p>
-<p>These will typically invoke deployments against actual DBs and vet that the results in the DB are correct.</p>
-<p>You can use these to see the full code path executed and trace through as you need to.</p></div>
-<div class="section">
-<h2><a name="Setup_a_test_database_for_development"></a>Setup a test database for development</h2>
-<p>Obevo defines a few common integation tests that DBMS implementations should use:</p>
+--><h1>Java API</h1>
 
 <ul>
-  
-<li>AbstractDbMetadataManagerIT and subclasses: Tests the DB Metadata API and retrieval</li>
-  
-<li>SameSchemaChangeAuditDaoTest and subclasses: Tests the execution and upgrades of the Change Audit tables</li>
-  
-<li>*Deploy*IT: Tests end-to-end deployments</li>
-</ul>
-<p>These tests require live DBs to execute against. In case you don&#x2019;t already have databases to execute against and would like to develop, we have guidance on how to do so, whether via Amazon RDS or via installing express editions of the DBMS software.</p>
-<p>See the table below for how to setup these dates.</p>
+<li><a href="#Module_Overview">Module Overview</a></li>
+<li><a href="#Modules_relevant_for_Java_API_Users">Modules relevant for Java API Users</a></li>
+<li><a href="#Java_Package_Overview">Java Package Overview</a></li>
+<li><a href="#Key_classes">Key classes</a></li>
+<li><a href="#Retrieving_dependencies_from_your_artifact_repository">Retrieving dependencies from your artifact repository</a></li>
+<li><a href="#Example_API_Usage_-_com.gs.obevo.api.factory.Obevo">Example API Usage - com.gs.obevo.api.factory.Obevo</a></li>
+<li><a href="#Example_API_Usage_-_Direct_Creation_of_DbEnvironment">Example API Usage - Direct Creation of DbEnvironment</a></li>
+<li><a href="#Configuring_Custom_Logging_for_Obevo_in_Java">Configuring Custom Logging for Obevo in Java</a></li></ul>
+<div class="section">
+<h2><a name="Module_Overview"></a>Module Overview</h2>
+<p>Before diving into the Java code, first let&#x2019;s describe the modules in Obevo.</p>
+<p>First, describe the high-level module groupings (the first-level of directories in the Obevo codebase):</p>
 
 <table border="0" class="table table-striped">
   <thead>
     
 <tr class="a">
       
-<th>Vendor</th>
+<th>Module Group</th>
       
-<th>Test Locale</th>
+<th>Description</th>
     </tr>
   </thead>
   <tbody>
     
 <tr class="b">
       
-<td>Sybase/SAP ASE</td>
+<td>obevo-core</td>
       
-<td><a href="dev-setup-sybase-ase.html">ASE Express Setup</a></td>
+<td>The core Obevo algorithm framework, as described in the <a href="design-walkthrough.html">Design Walkthrough</a></td>
     </tr>
     
 <tr class="a">
       
-<td>DB2</td>
+<td>obevo-db-impls</td>
       
-<td><a href="dev-setup-docker.html">Docker setup for DB2 Express</a></td>
+<td>DBMS-platform implementations of Obevo</td>
     </tr>
     
 <tr class="b">
       
-<td>MS SQL Server</td>
+<td>obevo-utils</td>
       
-<td><a href="dev-setup-docker.html">Docker setup for SQL Server</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
+<td>Java client utilities for DBMS-platforms that sit on top of the platform modules</td>
     </tr>
     
 <tr class="a">
       
-<td>Oracle</td>
+<td>obevo-dists</td>
       
-<td><a href="dev-setup-amazon.html">Amazon RDS</a></td>
+<td>API endpoints for non-Java clients to access Obevo from their builds</td>
+    </tr>
+  </tbody>
+</table>
+<p>And now the modules themselves (the first-level of directories in the Obevo codebase):</p>
+
+<table border="0" class="table table-striped">
+  <thead>
+    
+<tr class="a">
+      
+<th>Module </th>
+      
+<th>Module Group </th>
+      
+<th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    
+<tr class="b">
+      
+<td>obevo-core </td>
+      
+<td>core </td>
+      
+<td>Core module for implementing the Obevo incremental-deployment algorithm</td>
+    </tr>
+    
+<tr class="a">
+      
+<td>obevo-db </td>
+      
+<td>db-impls </td>
+      
+<td>The base implementation of the core DA algorithm for DBMS platforms</td>
     </tr>
     
 <tr class="b">
       
-<td>PostgreSQL</td>
+<td>obevo-db-* &lt;implType&gt; </td>
       
-<td><a href="dev-setup-docker.html">Docker setup for PostgreSQL</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
+<td>db-impls </td>
+      
+<td>The DBMS-specific implementations (full list <a href="platform-listing.html">here</a>). These implement a few interfaces defined in obevo-db</td>
     </tr>
     
 <tr class="a">
       
-<td>Sybase/SAP IQ</td>
+<td>obevo-dbmetadata-impl </td>
       
-<td>No instructions available yet</td>
+<td>db-impls </td>
+      
+<td>Wrapper code around the schemacrawler library (i.e. handling a couple tweaks around how to call the library)</td>
     </tr>
     
 <tr class="b">
       
-<td>H2</td>
+<td>obevo-internal-comparer </td>
       
-<td>No setup needed (in-memory DB)</td>
+<td>db-impls </td>
+      
+<td>Copy of the CATO library; hoping to retire this once the main CATO library takes in some changes</td>
     </tr>
     
 <tr class="a">
       
-<td>HSQLDB</td>
+<td>obevo-db-client-alldbs </td>
       
-<td>No setup needed (in-memory DB)</td>
+<td>db-impls </td>
+      
+<td>maven dependency grouping as a convenience to retrieve all DBMS implementations</td>
+    </tr>
+    
+<tr class="b">
+      
+<td>obevo-db-scenario-tests </td>
+      
+<td>db-impls </td>
+      
+<td>Scenario tests (not for client usage)</td>
+    </tr>
+    
+<tr class="a">
+      
+<td>obevo-db-unittest-util </td>
+      
+<td>obevo-db-utils </td>
+      
+<td>Utilities to facilitate creating unit test dbs and loading data via DB Unit</td>
+    </tr>
+    
+<tr class="b">
+      
+<td>obevo-reladomo-util </td>
+      
+<td>obevo-db-utils </td>
+      
+<td>Utility to generate DDLs from Reladomo</td>
+    </tr>
+    
+<tr class="a">
+      
+<td>obevo-dist </td>
+      
+<td>obevo-dists </td>
+      
+<td>binary assembly distribution</td>
+    </tr>
+    
+<tr class="b">
+      
+<td>obevo-maven-plugin </td>
+      
+<td>obevo-dists </td>
+      
+<td>Maven plugin</td>
+    </tr>
+    
+<tr class="a">
+      
+<td>obevo-maven-cbk-archetype </td>
+      
+<td>obevo-dists </td>
+      
+<td>Maven archetype to create Obevo projects.</td>
+    </tr>
+    
+<tr class="b">
+      
+<td>obevo-site </td>
+      
+<td>Documentation </td>
+      
+<td>The documentation bundle</td>
     </tr>
   </tbody>
 </table></div>
 <div class="section">
-<h2><a name="Adding_a_new_DBMS_implementation"></a>Adding a new DBMS implementation</h2>
-<div class="section">
-<div class="section">
-<h4><a name="a1._Create_a_new_module_obevo-db-dbmsName"></a>1. Create a new module obevo-db-&lt;dbmsName&gt;</h4>
-<p>You can use an existing DB implementation module as reference.</p>
-<p>See the <a href="platform-listing.html">Platform Listing</a> for the full list of modules.</p>
-<p>We recommend obevo-db-postgresql as a default choice if you need a suggestion.</p>
-<p>Rename only the package and the poms for now, i.e. don&#x2019;t yet rename the classes; we will get to those later</p>
-<p>Also add your project as a dependency to the obevo-db-client-all-dbs module.</p>
-<p>Add entry to default.yaml in com.gs.obevo.db.confg in obevo-db</p>
-<p>Rename platform name accordingly in &lt;YourPlatform&gt;DbPlatform</p></div>
-<div class="section">
-<h4><a name="a2._Setup_a_test_database"></a>2. Setup a test database</h4>
-<p>Option 1 (preferred): Docker search dockerhub for examples; you have plenty here</p>
-<p>1) add setup-docker-mongodb.sh file. ensure that your db can start</p>
-<p>2) add build profile to the pom</p>
-<p>Option 2: Amazon RDS See CreateDbInstance for using an API to create your database The only database currently using this is the Redshift platform (currently housed in postgres) Your own method:</p></div>
-<div class="section">
-<h4><a name="a3._determine_where_your_JDBC_driver_comes_from_and_add_it_to_the_project"></a>3. determine where your JDBC driver comes from and add it to the project</h4>
+<h2><a name="Modules_relevant_for_Java_API_Users"></a>Modules relevant for Java API Users</h2>
+<p>As an API client, you&#x2019;ll only need to depend on the following:</p>
 
 <ul>
   
-<li>preferably from Maven central. If so, then check the license:</li>
+<li>The core module for the platform type you are interested in (e.g. obevo-db for DBMS platforms)</li>
   
-<li>if compatible w/ Apache license (e.g. Apache, MIT, BSD, EPL), then add it</li>
+<li>The specific platform module that you are working on, e.g. one of the obevo-db *impl* modules or obevo-db-client-alldbs to access all impls</li>
   
-<li>if not compatible (e.g. GPL, LGPL), then make it optional as we don&#x2019;t want this included by default</li>
+<li>Optionally, any of the Java utility modules, e.g. in the obevo-db-utils module group</li>
   
-<li>sometimes needs a special Maven repo. see the oracle example for that (TBD)</li>
-  
-<li>sometimes is only within the docker container itself. see db2 example for that</li>
+<li>You should not access the other modules via Java</li>
 </ul></div>
 <div class="section">
-<h4><a name="a4._Create_and_setup_a_blank_DB_schema_to_run_your_tests_against"></a>4. Create and setup a blank DB schema to run your tests against</h4>
-<p>Obevo will run tests against actual DBMSs that have schemas dedicated to Obevo. Get a schema to facilitate your testing</p>
-<p>As a convention, name your schemas as dbdeploy01, dbdeploy02, dbdeploy03. * dbdeploy01 and dbdeploy02 are typically for testing your deployments * dbdeploy03 is for the metadata API tests</p></div>
-<div class="section">
-<h4><a name="a5._Setup_your_initial_test_files"></a>5. Setup your initial test files</h4>
-<p>First, update the docker-*-creds.yaml file accordingly to the DB you just setup</p>
-<p>Next, under platforms.&lt;yourplatform&gt;.example1.step1, let&#x2019;s start simple with just the table (rename the other folders for now)</p></div>
-<div class="section">
-<h4><a name="a6._Implement_the_classes_required_to_do_a_basic_incremental_deployment_for_simple_objects_like_tables"></a>6. Implement the classes required to do a basic incremental deployment for simple objects like tables</h4>
-<p>First, remove / comment the optional classes: * anything under change types * Lock classes * TranslationDialect classes</p>
-<p>The main classes you will need to implement: * &lt;PlatformName&gt;DbPlatform * &lt;PlatformName&gt;AppContext * &lt;PlatformName&gt;EnvironmentInfraSetup  * add code for programmatically creating schemas/groups/users, etc * &lt;PlatformName&gt;JdbcDataSourceFactory  * add the semantics for generating jdbc urls * &lt;PlatformName&gt;SqlExecutor  * here you will add the commands to switch between schemas</p>
-<p>Also implement a DbMetadataDialect for your new implementation in obevo-db-metadata-manager-impl</p>
-<p>Start w/ tables for now; we will get to stored procedures/views/etc. later</p></div>
-<div class="section">
-<h4><a name="a7._Get_the_integration_test_running_for_the_simple_example"></a>7. Get the integration test running for the simple example</h4>
-<p>Follow the examples, e.g. PostgreSqlDeployerIT Most examples will have a &#x201c;step1&#x201d; and &#x201c;step2&#x201d; - the idea is to do the initial deployment and then a subsequent update so that you can vet both cases.</p></div>
-<div class="section">
-<h4><a name="a8._Add_support_for_the_other_DB_Object_types"></a>8. Add support for the other DB Object types</h4>
-<p>e.g. stored procedures, views, static data etc.</p>
-<p>Also add the implementation for the DB Metadata Manager and the test</p></div>
-<div class="section">
-<h4><a name="a9._Add_the_-cleanFirst_command_to_your_test_to_vet_out_the_cleaning_command"></a>9. Add the -cleanFirst command to your test to vet out the cleaning command</h4>
-<p>Note that some of the DBMS types require specific sqls to query out the db objects that schemacrawler cannot get to. This would be declared in the *AppContext class if applicable.</p></div>
-<div class="section">
-<h4><a name="a10._Add_reverse-engineering_support"></a>10. Add reverse-engineering support</h4>
+<h2><a name="Java_Package_Overview"></a>Java Package Overview</h2>
+<p>com.gs.obevo is the main package under which all is kept - this is in the obevo-core module that has the code focusing on the change calculation algorithm.</p>
+<p>Under that, you will have the following core packages</p>
 
-<ol style="list-style-type: decimal">
-  
-<li>Run the steps in the user guide for reverse-engineering from Aqua</li>
-  
-<li>Try the AquaRevengTest for your module to ensure that the code can get formatted into the right structure</li>
-  
-<li>Modify the code as needed to get it to work (most of the work is just in parsing the text for the object names, and at this point, hopefully should not require much changes at this point for new DBMS&#x2019;s)</li>
-</ol></div></div></div>
+<table border="0" class="table table-striped">
+  <thead>
+    
+<tr class="a">
+      
+<th>Sub-package </th>
+      
+<th>Description </th>
+    </tr>
+  </thead>
+  <tbody>
+    
+<tr class="b">
+      
+<td>api </td>
+      
+<td>The public API entrypoint for executing deployments; good place to start to explore the API. Typically has the following subpackages:<br />- factory: Convenience factory classes to access the main Obevo classes<br />- appdata: The domain model classes corresponding to the code and data that clients would provide<br />- platform: The core classes/interfaces that will operate on the user data to carry out deployments.</td>
+    </tr>
+    
+<tr class="a">
+      
+<td>impl </td>
+      
+<td>The implementations of the API. Clients should avoid accessing these classes as these are meant to be internal</td>
+    </tr>
+    
+<tr class="b">
+      
+<td>apps </td>
+      
+<td>Obevo utilities built off the deploy api besides the basic deploy. Should only rely on the api/model packages, and not impl</td>
+    </tr>
+  </tbody>
+</table>
+<p>And you will also have the com.gs.obevo.db subpackage for the database platform, which will have the same pattern of child packages, i.e. api, impl, apps</p></div>
+<div class="section">
+<h2><a name="Key_classes"></a>Key classes</h2>
+
+<table border="0" class="table table-striped">
+  <thead>
+    
+<tr class="a">
+      
+<th>Class </th>
+      
+<th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    
+<tr class="b">
+      
+<td>com.gs.obevo.db.api.factory.DbEnvironmentFactory </td>
+      
+<td>The main entrypoint; use this to access the systems that you&#x2019;ve configured in your system configs and such.</td>
+    </tr>
+    
+<tr class="a">
+      
+<td>com.gs.obevo.db.api.appdata.DbEnvironment </td>
+      
+<td>The model class representing an environment to connect to. DbEnvironmentFactory would return this</td>
+    </tr>
+    
+<tr class="b">
+      
+<td>com.gs.obevo.db.api.DbDeployerAppContext </td>
+      
+<td>Context class to use to invoke deployments and that has references to the components that the Deployer uses and that you can access. e.g. methods for reading changes from source or the audit table</td>
+    </tr>
+  </tbody>
+</table></div>
+<div class="section">
+<h2><a name="Retrieving_dependencies_from_your_artifact_repository"></a>Retrieving dependencies from your artifact repository</h2>
+<p>Define the dependencies in your project prior to using them in your project</p>
+<p>Maven Example 1 - Conventional way</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">&lt;dependency&gt;
+    &lt;groupId&gt;com.goldmansachs.obevo&lt;/groupId&gt;
+    &lt;artifactId&gt;obevo-db&lt;/artifactId&gt;
+    &lt;version&gt;${obevo.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;com.goldmansachs.obevo&lt;/groupId&gt;
+    &lt;artifactId&gt;obevo-db-hsql&lt;/artifactId&gt;  &lt;!-- replace db-hsql w/ whatever platform you are trying to deploy to --&gt;
+    &lt;version&gt;${obevo.version}&lt;/version&gt;
+&lt;/dependency&gt;
+</pre></div></div>
+<p>Maven Example 2 - Use the Obevo BOM to manage your dependency versions in one place (see the <a class="externalLink" href="https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">Maven doc on BOMs</a> for more information)</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">&lt;!-- First define the BOM in your dependencyManagement section --&gt;
+&lt;dependencyManagement&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.goldmansachs.obevo&lt;/groupId&gt;
+            &lt;artifactId&gt;obevo-bom&lt;/artifactId&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+            &lt;scope&gt;import&lt;/scope&gt;
+            &lt;version&gt;${obevo.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;
+
+&lt;!-- Then define your dependencies in the modules that need them; no need to specify the version numbers here --&gt;
+&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;com.goldmansachs.obevo&lt;/groupId&gt;
+        &lt;artifactId&gt;obevo-db&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;com.goldmansachs.obevo&lt;/groupId&gt;
+        &lt;artifactId&gt;obevo-db-hsql&lt;/artifactId&gt;  &lt;!-- replace db-hsql w/ whatever platform you are trying to deploy to --&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</pre></div></div></div>
+<div class="section">
+<h2><a name="Example_API_Usage_-_com.gs.obevo.api.factory.Obevo"></a>Example API Usage - com.gs.obevo.api.factory.Obevo</h2>
+<p>com.gs.obevo.api.factory.Obevo is the main API entrypoint to read in your project configurations from the config file. Explore the API and the overloads for each method to see what other method options are available.</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">// Read the environment from your file system
+DbEnvironment env = Obevo.readEnvironment(&quot;./src/test/resources/platforms/hsql&quot;);
+
+// Build the app context - you can pass in credentials via the API if needed
+DeployerAppContext context = Obevo.buildContext(env, &quot;sa&quot;, &quot;password&quot;);
+
+// Then invoke the deploy commands.
+context.cleanEnvironment();
+context.deploy();
+</pre></div></div></div>
+<div class="section">
+<h2><a name="Example_API_Usage_-_Direct_Creation_of_DbEnvironment"></a>Example API Usage - Direct Creation of DbEnvironment</h2>
+<p>Or if you don&#x2019;t want to use the configuration file, you can create the DbEnvironment object directly, and then create the DbDeployerAppContext directly from there:</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">DbEnvironment dbEnv = new DbEnvironment();
+dbEnv.setSourceDirs(Lists.immutable.with(FileRetrievalMode.FILE_SYSTEM.resolveSingleFileObject(&quot;./src/test/resources/platforms/h2/step1&quot;)));
+dbEnv.setName(&quot;test&quot;);
+dbEnv.setPlatform(new H2DbPlatform());
+dbEnv.setSchemas(Sets.immutable.with(new Schema(&quot;SCHEMA1&quot;), new Schema(&quot;SCHEMA2&quot;)));
+dbEnv.setDbServer(&quot;BLAH&quot;);
+
+dbEnv.setSchemaNameOverrides(Maps.immutable.of(&quot;SCHEMA1&quot;, &quot;bogusSchema&quot;));
+dbEnv.setNullToken(&quot;(null)&quot;);
+dbEnv.setDataDelimiter('^');
+
+
+DeployerAppContext context = Obevo.buildContext(dbEnv, new Credential(&quot;sa&quot;, &quot;&quot;));
+
+context.setupEnvInfra();
+context.cleanEnvironment();
+context.deploy();
+</pre></div></div></div>
+<div class="section">
+<h2><a name="Configuring_Custom_Logging_for_Obevo_in_Java"></a>Configuring Custom Logging for Obevo in Java</h2>
+<p>Obevo uses the <a class="externalLink" href="https://www.slf4j.org">SLF4J API</a>, and the main jars do not include any logging implementations as third-party dependencies.</p>
+<p>Hence, you can configure your logging as you wish.</p>
+<p>Note: the only exception is the obevo-cli module, which is the command-line API and will have a logging implementation included. However, this dependency is not appropriate for Java library usage.</p></div>
         </div>
       </div>
     </div>

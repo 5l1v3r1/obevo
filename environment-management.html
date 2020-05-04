@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Date-Revision-yyyymmdd" content="20200504" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>Obevo &#x2013; Developer Guide</title>
+    <title>Obevo &#x2013; Environment Management</title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.6.min.css" />
     <link rel="stylesheet" href="./css/site.css" />
     <link rel="stylesheet" href="./css/print.css" media="print" />
@@ -129,7 +129,7 @@
       <div id="breadcrumbs">
         <ul class="breadcrumb">
         <li class=""><a href="./" title="Obevo">Obevo</a><span class="divider">/</span></li>
-    <li class="active ">Developer Guide</li>
+    <li class="active ">Environment Management</li>
         <li id="publishDate" class="pull-right"><span class="divider">|</span> Last Published: 2020-05-04</li>
           <li id="projectVersion" class="pull-right">Version: local-SNAPSHOT</li>
         </ul>
@@ -145,7 +145,8 @@
     <li><a href="support.html" title="Help and Support"><span class="none"></span>Help and Support</a>  </li>
           <li class="nav-header">Technical Documentation</li>
     <li><a href="db-project-structure.html" title="DB Project Structure"><span class="none"></span>DB Project Structure</a>  </li>
-    <li><a href="environment-management.html" title="Environment Management"><span class="none"></span>Environment Management</a>  </li>
+    <li class="active"><a href="#"><span class="none"></span>Environment Management</a>
+  </li>
     <li><a href="permission-management.html" title="Permission Management"><span class="none"></span>Permission Management</a>  </li>
     <li><a href="error-handling.html" title="Error-Handling"><span class="none"></span>Error-Handling</a>  </li>
           <li class="nav-header">API Documentation</li>
@@ -184,8 +185,7 @@
     <li><a href="legacy-onboarding-guide.html" title="Legacy Onboarding - Legacy Systems"><span class="none"></span>Legacy Onboarding - Legacy Systems</a>  </li>
     <li><a href="db-merge-tool.html" title="DB Merge Tool"><span class="none"></span>DB Merge Tool</a>  </li>
           <li class="nav-header">Developer Information</li>
-    <li class="active"><a href="#"><span class="icon-chevron-down"></span>Developer Guide</a>
-
+    <li><a href="developer-guide.html" title="Developer Guide"><span class="icon-chevron-down"></span>Developer Guide</a>
       <ul class="nav nav-list">
     <li><a href="dev-setup-docker.html" title="Docker-based Test DB Setup"><span class="none"></span>Docker-based Test DB Setup</a>  </li>
     <li><a href="dev-setup-amazon.html" title="Amazon RDS DB Setup"><span class="none"></span>Amazon RDS DB Setup</a>  </li>
@@ -221,175 +221,100 @@
     specific language governing permissions and limitations
     under the License.
 
---><h1>Developer Guide</h1>
-<div class="section">
-<h2><a name="Quick_Code_Walkthrough__Key_Classes:"></a>Quick Code Walkthrough + Key Classes:</h2>
-<p>First, read through these:</p>
+--><h1>Environment Management</h1>
+<p>Ideally, the same code will get deployed to all your environments. However, you may have use cases where you need to only deploy some changes to certain environments. This page describes how to handle that with Obevo.</p>
 
-<ol style="list-style-type: decimal">
-  
-<li><a href="design-walkthrough.html">Design Walkthrough</a> to understand what the tool is trying to do and how</li>
-  
-<li><a href="java-api.html">Java API</a> to see the module structure and understand the tool from a client perspective</li>
-</ol>
-<p>Pay special attention to the &#x201c;Developer Guide note&#x201d; mentions in the Design Walkthrough to see how the design maps to the code.</p></div>
+<ul>
+<li><a href="#Tokenization">Tokenization</a></li>
+<li><a href="#The__METADATA_annotation">The //// METADATA annotation</a></li>
+<li><a href="#Environment-specific_deployments">Environment-specific deployments</a></li>
+<li><a href="#Platform-specific_deployments">Platform-specific deployments</a></li>
+<li><a href="#Common_metadata_in_packages_package-info.txt">Common metadata in packages (package-info.txt)</a></li></ul>
 <div class="section">
-<h2><a name="Getting_started_with_coding"></a>Getting started with coding</h2>
-<p>Try out any of the unit tests and ITs in the DBMS-specific modules or the scenario test modules.</p>
-<p>These will typically invoke deployments against actual DBs and vet that the results in the DB are correct.</p>
-<p>You can use these to see the full code path executed and trace through as you need to.</p></div>
+<h2><a name="Tokenization"></a>Tokenization</h2>
+<p>You can define tokens per environment to tokenize your DB code</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">&lt;!-- In your system-config.xml file --&gt;
+&lt;environments&gt;
+    &lt;dbEnvironment name=&quot;qa&quot; cleanBuildAllowed=&quot;false&quot; dbDataSourceName=&quot;NYQA01&quot;&gt;
+        &lt;tokens&gt;
+            &lt;token key=&quot;TABLESPACE1&quot; value=&quot;QA_TSP_001&quot; /&gt;
+            &lt;token key=&quot;MY_OTHER_TOKEN&quot; value=&quot;qaToken&quot; /&gt;
+        &lt;/tokens&gt;
+    &lt;/dbEnvironment&gt;
+    &lt;dbEnvironment name=&quot;prod&quot; cleanBuildAllowed=&quot;false&quot; dbDataSourceName=&quot;NYPROD01&quot;&gt;
+        &lt;tokens&gt;
+            &lt;token key=&quot;TABLESPACE1&quot; value=&quot;PROD_TSP_001&quot; /&gt;
+            &lt;token key=&quot;MY_OTHER_TOKEN&quot; value=&quot;prodToken&quot; /&gt;
+        &lt;/tokens&gt;
+    &lt;/dbEnvironment&gt;
+&lt;/environments&gt;
+</pre></div></div>
+<p>Then refer to those in your source files</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">//// CHANGE name=&quot;mychange&quot;
+create table MYTABLE (
+    FIELD1 int
+) in ${TABLESPACE1}
+</pre></div></div>
+<p>Note that you can tokenize a //// CHANGE file even after it has been deployed, so long as applying the token results in the same content after</p>
+<p>You can also define tokens in your permissions section in your system-config.xml (see <a href="permission-management.html">Permission Management</a>) if you need to tokenize that.</p></div>
 <div class="section">
-<h2><a name="Setup_a_test_database_for_development"></a>Setup a test database for development</h2>
-<p>Obevo defines a few common integation tests that DBMS implementations should use:</p>
+<h2><a name="The__METADATA_annotation"></a>The //// METADATA annotation</h2>
+<p>The //// METADATA annotation line is used to declare special attributes within your object files. We will describe the functionalities that can be enabled with this shortly. But first, let&#x2019;s review the format:</p>
+<p>This line needs to be the first line of the db object file, and it can go in any of the file types. It can define attributes and toggles, e.g.</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">//// METADATA attr1=&quot;val1&quot; attr2=&quot;val2&quot; toggle1 toggle
+</pre></div></div>
 
 <ul>
   
-<li>AbstractDbMetadataManagerIT and subclasses: Tests the DB Metadata API and retrieval</li>
+<li>Attributes have a name and a value</li>
   
-<li>SameSchemaChangeAuditDaoTest and subclasses: Tests the execution and upgrades of the Change Audit tables</li>
-  
-<li>*Deploy*IT: Tests end-to-end deployments</li>
-</ul>
-<p>These tests require live DBs to execute against. In case you don&#x2019;t already have databases to execute against and would like to develop, we have guidance on how to do so, whether via Amazon RDS or via installing express editions of the DBMS software.</p>
-<p>See the table below for how to setup these dates.</p>
-
-<table border="0" class="table table-striped">
-  <thead>
-    
-<tr class="a">
-      
-<th>Vendor</th>
-      
-<th>Test Locale</th>
-    </tr>
-  </thead>
-  <tbody>
-    
-<tr class="b">
-      
-<td>Sybase/SAP ASE</td>
-      
-<td><a href="dev-setup-sybase-ase.html">ASE Express Setup</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>DB2</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for DB2 Express</a></td>
-    </tr>
-    
-<tr class="b">
-      
-<td>MS SQL Server</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for SQL Server</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>Oracle</td>
-      
-<td><a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="b">
-      
-<td>PostgreSQL</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for PostgreSQL</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>Sybase/SAP IQ</td>
-      
-<td>No instructions available yet</td>
-    </tr>
-    
-<tr class="b">
-      
-<td>H2</td>
-      
-<td>No setup needed (in-memory DB)</td>
-    </tr>
-    
-<tr class="a">
-      
-<td>HSQLDB</td>
-      
-<td>No setup needed (in-memory DB)</td>
-    </tr>
-  </tbody>
-</table></div>
-<div class="section">
-<h2><a name="Adding_a_new_DBMS_implementation"></a>Adding a new DBMS implementation</h2>
-<div class="section">
-<div class="section">
-<h4><a name="a1._Create_a_new_module_obevo-db-dbmsName"></a>1. Create a new module obevo-db-&lt;dbmsName&gt;</h4>
-<p>You can use an existing DB implementation module as reference.</p>
-<p>See the <a href="platform-listing.html">Platform Listing</a> for the full list of modules.</p>
-<p>We recommend obevo-db-postgresql as a default choice if you need a suggestion.</p>
-<p>Rename only the package and the poms for now, i.e. don&#x2019;t yet rename the classes; we will get to those later</p>
-<p>Also add your project as a dependency to the obevo-db-client-all-dbs module.</p>
-<p>Add entry to default.yaml in com.gs.obevo.db.confg in obevo-db</p>
-<p>Rename platform name accordingly in &lt;YourPlatform&gt;DbPlatform</p></div>
-<div class="section">
-<h4><a name="a2._Setup_a_test_database"></a>2. Setup a test database</h4>
-<p>Option 1 (preferred): Docker search dockerhub for examples; you have plenty here</p>
-<p>1) add setup-docker-mongodb.sh file. ensure that your db can start</p>
-<p>2) add build profile to the pom</p>
-<p>Option 2: Amazon RDS See CreateDbInstance for using an API to create your database The only database currently using this is the Redshift platform (currently housed in postgres) Your own method:</p></div>
-<div class="section">
-<h4><a name="a3._determine_where_your_JDBC_driver_comes_from_and_add_it_to_the_project"></a>3. determine where your JDBC driver comes from and add it to the project</h4>
-
-<ul>
-  
-<li>preferably from Maven central. If so, then check the license:</li>
-  
-<li>if compatible w/ Apache license (e.g. Apache, MIT, BSD, EPL), then add it</li>
-  
-<li>if not compatible (e.g. GPL, LGPL), then make it optional as we don&#x2019;t want this included by default</li>
-  
-<li>sometimes needs a special Maven repo. see the oracle example for that (TBD)</li>
-  
-<li>sometimes is only within the docker container itself. see db2 example for that</li>
+<li>Toggles represent boolean attributes (the presence of a toggle indicates that the value is true; otherwise, false)</li>
 </ul></div>
 <div class="section">
-<h4><a name="a4._Create_and_setup_a_blank_DB_schema_to_run_your_tests_against"></a>4. Create and setup a blank DB schema to run your tests against</h4>
-<p>Obevo will run tests against actual DBMSs that have schemas dedicated to Obevo. Get a schema to facilitate your testing</p>
-<p>As a convention, name your schemas as dbdeploy01, dbdeploy02, dbdeploy03. * dbdeploy01 and dbdeploy02 are typically for testing your deployments * dbdeploy03 is for the metadata API tests</p></div>
-<div class="section">
-<h4><a name="a5._Setup_your_initial_test_files"></a>5. Setup your initial test files</h4>
-<p>First, update the docker-*-creds.yaml file accordingly to the DB you just setup</p>
-<p>Next, under platforms.&lt;yourplatform&gt;.example1.step1, let&#x2019;s start simple with just the table (rename the other folders for now)</p></div>
-<div class="section">
-<h4><a name="a6._Implement_the_classes_required_to_do_a_basic_incremental_deployment_for_simple_objects_like_tables"></a>6. Implement the classes required to do a basic incremental deployment for simple objects like tables</h4>
-<p>First, remove / comment the optional classes: * anything under change types * Lock classes * TranslationDialect classes</p>
-<p>The main classes you will need to implement: * &lt;PlatformName&gt;DbPlatform * &lt;PlatformName&gt;AppContext * &lt;PlatformName&gt;EnvironmentInfraSetup  * add code for programmatically creating schemas/groups/users, etc * &lt;PlatformName&gt;JdbcDataSourceFactory  * add the semantics for generating jdbc urls * &lt;PlatformName&gt;SqlExecutor  * here you will add the commands to switch between schemas</p>
-<p>Also implement a DbMetadataDialect for your new implementation in obevo-db-metadata-manager-impl</p>
-<p>Start w/ tables for now; we will get to stored procedures/views/etc. later</p></div>
-<div class="section">
-<h4><a name="a7._Get_the_integration_test_running_for_the_simple_example"></a>7. Get the integration test running for the simple example</h4>
-<p>Follow the examples, e.g. PostgreSqlDeployerIT Most examples will have a &#x201c;step1&#x201d; and &#x201c;step2&#x201d; - the idea is to do the initial deployment and then a subsequent update so that you can vet both cases.</p></div>
-<div class="section">
-<h4><a name="a8._Add_support_for_the_other_DB_Object_types"></a>8. Add support for the other DB Object types</h4>
-<p>e.g. stored procedures, views, static data etc.</p>
-<p>Also add the implementation for the DB Metadata Manager and the test</p></div>
-<div class="section">
-<h4><a name="a9._Add_the_-cleanFirst_command_to_your_test_to_vet_out_the_cleaning_command"></a>9. Add the -cleanFirst command to your test to vet out the cleaning command</h4>
-<p>Note that some of the DBMS types require specific sqls to query out the db objects that schemacrawler cannot get to. This would be declared in the *AppContext class if applicable.</p></div>
-<div class="section">
-<h4><a name="a10._Add_reverse-engineering_support"></a>10. Add reverse-engineering support</h4>
+<h2><a name="Environment-specific_deployments"></a>Environment-specific deployments</h2>
+<p>You need need certain objects/scripts to only run against certain environments. An example is static metadata tables that differ across environments (e.g. some values in qa, some in prod, etc.)</p>
+<p>As mentioned in the <a href="db-project-structure.html">DB Project Structure</a> section, your file name can allow this, e.g. /data/MYCODES.qa.sql /data/MYCODES.uat.sql /data/MYCODES.prod.sql</p>
+<p>In addition, you need the &#x201c;includeEnvs&#x201d; or &#x201c;excludeEnvs&#x201d; attribute under //// METADATA or //// CHANGE</p>
+<p>This means that it would include/exclude the environments you list out for that attribute. You cannot use both (it would not make sense); just one or the other</p>
+<p>The list can be comma separated, and you can use the wildcard %</p>
+<p>Examples:</p>
 
-<ol style="list-style-type: decimal">
+<ul>
   
-<li>Run the steps in the user guide for reverse-engineering from Aqua</li>
+<li>//// METADATA includeEnvs=prod1,prod2</li>
   
-<li>Try the AquaRevengTest for your module to ensure that the code can get formatted into the right structure</li>
+<li>//// METADATA excludeEnvs=dev</li>
   
-<li>Modify the code as needed to get it to work (most of the work is just in parsing the text for the object names, and at this point, hopefully should not require much changes at this point for new DBMS&#x2019;s)</li>
-</ol></div></div></div>
+<li>//// CHANGE name=&#x201c;abc&#x201d; includeEnvs=qa,uat%</li>
+</ul></div>
+<div class="section">
+<h2><a name="Platform-specific_deployments"></a>Platform-specific deployments</h2>
+<p>[since version 5.x] Similar to environment-specific deployments, changes can be limited based on the platform type. This is utilitized particularly for the in-memory translation use case (i.e. to have certain SQLs executed for the regular platform and others for in-memory)</p>
+<p>Use the includePlatforms/excludePlatforms attributes for this, using the names given for the platforms as keys, e.g.:</p>
+
+<ul>
+  
+<li>//// METADATA includePlatforms=DB2</li>
+  
+<li>//// CHANGE name=&#x201c;abc&#x201d; excludePlatforms=HSQL</li>
+</ul></div>
+<div class="section">
+<h2><a name="Common_metadata_in_packages_package-info.txt"></a>Common metadata in packages (package-info.txt)</h2>
+<p>If you want all files in a particular folder to have the same metadata, you can add a package-info.txt file to that folder and add content as needed.</p>
+<p>For example:</p>
+<p>### /migration/package-info.txt</p>
+
+<div class="source">
+<div class="source"><pre class="prettyprint">//// METADATA excludeEnvs=&quot;db1*&quot;
+</pre></div></div>
+<p>A common usecase for this is if you want certain files to only be deployed to certain environments (i.e. you name your QA environments in a particular way, starting w/ qa, and you define static data for qa in such a folder)</p>
+<p>Note that this is currently <i>NOT</i> RECURSIVE. So if you define this in one folder, it will not trickle to its subchildren</p></div>
         </div>
       </div>
     </div>

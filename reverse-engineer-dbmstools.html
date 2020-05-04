@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Date-Revision-yyyymmdd" content="20200504" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>Obevo &#x2013; Developer Guide</title>
+    <title>Obevo &#x2013; Reverse-Engineering via DBMS-Provided Tools</title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.6.min.css" />
     <link rel="stylesheet" href="./css/site.css" />
     <link rel="stylesheet" href="./css/print.css" media="print" />
@@ -129,7 +129,7 @@
       <div id="breadcrumbs">
         <ul class="breadcrumb">
         <li class=""><a href="./" title="Obevo">Obevo</a><span class="divider">/</span></li>
-    <li class="active ">Developer Guide</li>
+    <li class="active ">Reverse-Engineering via DBMS-Provided Tools</li>
         <li id="publishDate" class="pull-right"><span class="divider">|</span> Last Published: 2020-05-04</li>
           <li id="projectVersion" class="pull-right">Version: local-SNAPSHOT</li>
         </ul>
@@ -184,8 +184,7 @@
     <li><a href="legacy-onboarding-guide.html" title="Legacy Onboarding - Legacy Systems"><span class="none"></span>Legacy Onboarding - Legacy Systems</a>  </li>
     <li><a href="db-merge-tool.html" title="DB Merge Tool"><span class="none"></span>DB Merge Tool</a>  </li>
           <li class="nav-header">Developer Information</li>
-    <li class="active"><a href="#"><span class="icon-chevron-down"></span>Developer Guide</a>
-
+    <li><a href="developer-guide.html" title="Developer Guide"><span class="icon-chevron-down"></span>Developer Guide</a>
       <ul class="nav nav-list">
     <li><a href="dev-setup-docker.html" title="Docker-based Test DB Setup"><span class="none"></span>Docker-based Test DB Setup</a>  </li>
     <li><a href="dev-setup-amazon.html" title="Amazon RDS DB Setup"><span class="none"></span>Amazon RDS DB Setup</a>  </li>
@@ -221,175 +220,127 @@
     specific language governing permissions and limitations
     under the License.
 
---><h1>Developer Guide</h1>
-<div class="section">
-<h2><a name="Quick_Code_Walkthrough__Key_Classes:"></a>Quick Code Walkthrough + Key Classes:</h2>
-<p>First, read through these:</p>
-
-<ol style="list-style-type: decimal">
-  
-<li><a href="design-walkthrough.html">Design Walkthrough</a> to understand what the tool is trying to do and how</li>
-  
-<li><a href="java-api.html">Java API</a> to see the module structure and understand the tool from a client perspective</li>
-</ol>
-<p>Pay special attention to the &#x201c;Developer Guide note&#x201d; mentions in the Design Walkthrough to see how the design maps to the code.</p></div>
-<div class="section">
-<h2><a name="Getting_started_with_coding"></a>Getting started with coding</h2>
-<p>Try out any of the unit tests and ITs in the DBMS-specific modules or the scenario test modules.</p>
-<p>These will typically invoke deployments against actual DBs and vet that the results in the DB are correct.</p>
-<p>You can use these to see the full code path executed and trace through as you need to.</p></div>
-<div class="section">
-<h2><a name="Setup_a_test_database_for_development"></a>Setup a test database for development</h2>
-<p>Obevo defines a few common integation tests that DBMS implementations should use:</p>
-
-<ul>
-  
-<li>AbstractDbMetadataManagerIT and subclasses: Tests the DB Metadata API and retrieval</li>
-  
-<li>SameSchemaChangeAuditDaoTest and subclasses: Tests the execution and upgrades of the Change Audit tables</li>
-  
-<li>*Deploy*IT: Tests end-to-end deployments</li>
-</ul>
-<p>These tests require live DBs to execute against. In case you don&#x2019;t already have databases to execute against and would like to develop, we have guidance on how to do so, whether via Amazon RDS or via installing express editions of the DBMS software.</p>
-<p>See the table below for how to setup these dates.</p>
+--><div class="section">
+<h2><a name="Reverse-Engineering_via_DBMS-Provided_Tools"></a>Reverse-Engineering via DBMS-Provided Tools</h2>
+<p>Obevo will integrate w/ DBMS-provided tooling for reverse-engineering. We prefer this route over using external tools as the DBMS vendors are more likely to keep up-to-date on their own DDL generation tooling.</p>
+<p>Obevo will either A) call the vendor APIs directly or B) provide you the command/s to run to generate some interim artifacts for Obevo to then complete processing.</p>
+<p>The following tools are currently supported.</p>
 
 <table border="0" class="table table-striped">
   <thead>
     
 <tr class="a">
       
-<th>Vendor</th>
+<th>DBMS </th>
       
-<th>Test Locale</th>
+<th>Tooling Leveraged by Obevo </th>
+      
+<th>Who will invoke the vendor API? </th>
     </tr>
   </thead>
   <tbody>
     
 <tr class="b">
       
-<td>Sybase/SAP ASE</td>
+<td>Sybase ASE</td>
       
-<td><a href="dev-setup-sybase-ase.html">ASE Express Setup</a></td>
+<td><a class="externalLink" href="http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc30191.1570100/doc/html/san1367605037678.html">ddlgen</a></td>
+      
+<td>User</td>
     </tr>
     
 <tr class="a">
       
 <td>DB2</td>
       
-<td><a href="dev-setup-docker.html">Docker setup for DB2 Express</a></td>
+<td><a class="externalLink" href="http://www.ibm.com/support/knowledgecenter/SSEPGG_11.1.0/com.ibm.db2.luw.admin.cmd.doc/doc/r0002051.html">DB2LOOK</a></td>
+      
+<td>User</td>
     </tr>
     
 <tr class="b">
       
-<td>MS SQL Server</td>
+<td>Postgres</td>
       
-<td><a href="dev-setup-docker.html">Docker setup for SQL Server</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
+<td><a class="externalLink" href="https://www.postgresql.org/docs/9.6/static/app-pgdump.html">pg_dump</a></td>
+      
+<td>User</td>
     </tr>
     
 <tr class="a">
+      
+<td>SQL Server</td>
+      
+<td><a class="externalLink" href="https://msdn.microsoft.com/en-us/library/microsoft.sqlserver.management.smo.scripter.aspx">Microsoft.SqlServer.Management.Smo.Scripter class in Powershell</a></td>
+      
+<td>User</td>
+    </tr>
+    
+<tr class="b">
       
 <td>Oracle</td>
       
-<td><a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="b">
+<td><a class="externalLink" href="https://docs.oracle.com/database/121/ARPLS/d_metada.htm#ARPLS026">DBMS_METADATA API via JDBC</a></td>
       
-<td>PostgreSQL</td>
-      
-<td><a href="dev-setup-docker.html">Docker setup for PostgreSQL</a> or <a href="dev-setup-amazon.html">Amazon RDS</a></td>
-    </tr>
-    
-<tr class="a">
-      
-<td>Sybase/SAP IQ</td>
-      
-<td>No instructions available yet</td>
-    </tr>
-    
-<tr class="b">
-      
-<td>H2</td>
-      
-<td>No setup needed (in-memory DB)</td>
-    </tr>
-    
-<tr class="a">
-      
-<td>HSQLDB</td>
-      
-<td>No setup needed (in-memory DB)</td>
+<td>Obevo</td>
     </tr>
   </tbody>
-</table></div>
+</table>
+<p>The tooling generally works as follows: A) If Obevo invokes the vendor API 1. Execute the Obevo command. This will invoke the vendor API and save its output into an interim file, and then proceed w/ the rest of the reverse engineering 2. If the reverse-engineering looks good, then you are done 3. Otherwise, modify the interim file and rerun the Obevo command w/ the interim file argument passed in</p>
+<p>B) If the user invokes the vendor API 1. Execute the Obevo command to generate the DBMS-specific commands to reverse-engineer the DDLs to a particular format 2. Execute those DBMS-specific commands to generate the DDL output file 3. Re-execute the Obevo command w/ the DDL output file as an additional argument</p></div>
 <div class="section">
-<h2><a name="Adding_a_new_DBMS_implementation"></a>Adding a new DBMS implementation</h2>
+<h2><a name="Execution_Steps"></a>Execution Steps</h2>
 <div class="section">
 <div class="section">
-<h4><a name="a1._Create_a_new_module_obevo-db-dbmsName"></a>1. Create a new module obevo-db-&lt;dbmsName&gt;</h4>
-<p>You can use an existing DB implementation module as reference.</p>
-<p>See the <a href="platform-listing.html">Platform Listing</a> for the full list of modules.</p>
-<p>We recommend obevo-db-postgresql as a default choice if you need a suggestion.</p>
-<p>Rename only the package and the poms for now, i.e. don&#x2019;t yet rename the classes; we will get to those later</p>
-<p>Also add your project as a dependency to the obevo-db-client-all-dbs module.</p>
-<p>Add entry to default.yaml in com.gs.obevo.db.confg in obevo-db</p>
-<p>Rename platform name accordingly in &lt;YourPlatform&gt;DbPlatform</p></div>
-<div class="section">
-<h4><a name="a2._Setup_a_test_database"></a>2. Setup a test database</h4>
-<p>Option 1 (preferred): Docker search dockerhub for examples; you have plenty here</p>
-<p>1) add setup-docker-mongodb.sh file. ensure that your db can start</p>
-<p>2) add build profile to the pom</p>
-<p>Option 2: Amazon RDS See CreateDbInstance for using an API to create your database The only database currently using this is the Redshift platform (currently housed in postgres) Your own method:</p></div>
-<div class="section">
-<h4><a name="a3._determine_where_your_JDBC_driver_comes_from_and_add_it_to_the_project"></a>3. determine where your JDBC driver comes from and add it to the project</h4>
+<h4><a name="Step_1:_execute_the_NEWREVENG_command_with_your_arguments"></a>Step 1: execute the NEWREVENG command with your arguments</h4>
 
-<ul>
-  
-<li>preferably from Maven central. If so, then check the license:</li>
-  
-<li>if compatible w/ Apache license (e.g. Apache, MIT, BSD, EPL), then add it</li>
-  
-<li>if not compatible (e.g. GPL, LGPL), then make it optional as we don&#x2019;t want this included by default</li>
-  
-<li>sometimes needs a special Maven repo. see the oracle example for that (TBD)</li>
-  
-<li>sometimes is only within the docker container itself. see db2 example for that</li>
-</ul></div>
+<div class="source">
+<div class="source"><pre class="prettyprint">%OBEVO_HOME%\bin\deploy.bat NEWREVENG -dbType DB2 -dbSchema YourSchemaName -mode schema -outputPath h:\reveng-example-output -dbHost yourhost.me.com -dbPort 1234 -dbServer MYDB01
+
+Detailing the arguments:
+ -dbType: required, specify SYBASE_ASE or DB2
+ -dbSchema: required, the schema/database you are querying from
+ -mode: required, use the &quot;schema&quot; value
+ -outputPath: required, specify where your reverse-engineered output should go
+ Connection arguments - specify either -dbHost and -dbPort for Sybase or -dbHost and -dbPort and -dbServer for DB2
+
+Optional Arguments:
+ -debugLogEnabled: use this if you have questions on reverse-engineering that you want to report to the Obevo team. This adds debug information that is useful for support
+</pre></div></div></div>
 <div class="section">
-<h4><a name="a4._Create_and_setup_a_blank_DB_schema_to_run_your_tests_against"></a>4. Create and setup a blank DB schema to run your tests against</h4>
-<p>Obevo will run tests against actual DBMSs that have schemas dedicated to Obevo. Get a schema to facilitate your testing</p>
-<p>As a convention, name your schemas as dbdeploy01, dbdeploy02, dbdeploy03. * dbdeploy01 and dbdeploy02 are typically for testing your deployments * dbdeploy03 is for the metadata API tests</p></div>
+<h4><a name="Step_2:_execute_the_commands_that_are_prompted_for_you_in_the_instructions_from_the_Step_1_output."></a>Step 2: execute the commands that are prompted for you in the instructions from the Step 1 output.</h4></div>
 <div class="section">
-<h4><a name="a5._Setup_your_initial_test_files"></a>5. Setup your initial test files</h4>
-<p>First, update the docker-*-creds.yaml file accordingly to the DB you just setup</p>
-<p>Next, under platforms.&lt;yourplatform&gt;.example1.step1, let&#x2019;s start simple with just the table (rename the other folders for now)</p></div>
-<div class="section">
-<h4><a name="a6._Implement_the_classes_required_to_do_a_basic_incremental_deployment_for_simple_objects_like_tables"></a>6. Implement the classes required to do a basic incremental deployment for simple objects like tables</h4>
-<p>First, remove / comment the optional classes: * anything under change types * Lock classes * TranslationDialect classes</p>
-<p>The main classes you will need to implement: * &lt;PlatformName&gt;DbPlatform * &lt;PlatformName&gt;AppContext * &lt;PlatformName&gt;EnvironmentInfraSetup  * add code for programmatically creating schemas/groups/users, etc * &lt;PlatformName&gt;JdbcDataSourceFactory  * add the semantics for generating jdbc urls * &lt;PlatformName&gt;SqlExecutor  * here you will add the commands to switch between schemas</p>
-<p>Also implement a DbMetadataDialect for your new implementation in obevo-db-metadata-manager-impl</p>
-<p>Start w/ tables for now; we will get to stored procedures/views/etc. later</p></div>
-<div class="section">
-<h4><a name="a7._Get_the_integration_test_running_for_the_simple_example"></a>7. Get the integration test running for the simple example</h4>
-<p>Follow the examples, e.g. PostgreSqlDeployerIT Most examples will have a &#x201c;step1&#x201d; and &#x201c;step2&#x201d; - the idea is to do the initial deployment and then a subsequent update so that you can vet both cases.</p></div>
-<div class="section">
-<h4><a name="a8._Add_support_for_the_other_DB_Object_types"></a>8. Add support for the other DB Object types</h4>
-<p>e.g. stored procedures, views, static data etc.</p>
-<p>Also add the implementation for the DB Metadata Manager and the test</p></div>
-<div class="section">
-<h4><a name="a9._Add_the_-cleanFirst_command_to_your_test_to_vet_out_the_cleaning_command"></a>9. Add the -cleanFirst command to your test to vet out the cleaning command</h4>
-<p>Note that some of the DBMS types require specific sqls to query out the db objects that schemacrawler cannot get to. This would be declared in the *AppContext class if applicable.</p></div>
-<div class="section">
-<h4><a name="a10._Add_reverse-engineering_support"></a>10. Add reverse-engineering support</h4>
+<h4><a name="Step_3:_execute_your_step_1_command_again_but_add_the_-inputPath_yourFilePath_argument_to_do_the_conversion_to_the_obevo_format"></a>Step 3: execute your step 1 command again, but add the -inputPath &lt;yourFilePath&gt; argument to do the conversion to the obevo format</h4>
+<p>This will generate the reverse-engineered output under &lt;outputDir&gt;/final</p>
+<p>Once you have these files, do the final touches on them as you see fit (e.g. delete junk tables)</p>
+<p>Some files that you should note / cleanup</p>
 
 <ol style="list-style-type: decimal">
   
-<li>Run the steps in the user guide for reverse-engineering from Aqua</li>
+<li>-pleaseAnalyze folders: If you see directories containing this phrase, then the tool could not figure out what to do w/ those sql snippets. Either manually figure out where to put them and do so, or if you find too many such cases, reach out to the product team via Github, including a zip file of your reveng contents</li>
   
-<li>Try the AquaRevengTest for your module to ensure that the code can get formatted into the right structure</li>
-  
-<li>Modify the code as needed to get it to work (most of the work is just in parsing the text for the object names, and at this point, hopefully should not require much changes at this point for new DBMS&#x2019;s)</li>
-</ol></div></div></div>
+<li>UNMAPPEDSCHEMA folder: The reverse-engineering only works on the schema you specify with the -dbSchema argument. If objects in other schemas are detected in your input script, they will be placed in this folder. Ideally, you should not see this or use these, but we place it here for full transparency.</li>
+</ol>
+<p>Note that we explicitly don&#x2019;t include the grants here. This is because you can (and should) use the global permissioning functionality instead.</p>
+<p>Once done, return to the <a href="existing-onboarding-guide.html">Existing Onboarding Guide</a> to continue the onboarding process.</p></div></div></div>
+<div class="section">
+<h2><a name="Notes_on_using_each_vendor_API:"></a>Notes on using each vendor API:</h2>
+<div class="section">
+<h3><a name="Sybase_ASE_-_ddlgen"></a>Sybase ASE - ddlgen</h3>
+<p>Check with your database administrators on how to obtain the binaries to run ddlgen</p></div>
+<div class="section">
+<h3><a name="DB2_-_db2look"></a>DB2 - db2look</h3>
+<p>Check with your database administrators on how to obtain the binaries to run db2look</p></div>
+<div class="section">
+<h3><a name="PostgreSQL_-_pgdump"></a>PostgreSQL - pgdump</h3>
+<p>pg_dump is available within the core distribution of PostgreSQL. You can use that distro as a client to connect to your DB; you do not need PostgreSQL installed on your computer.</p>
+<p><a class="externalLink" href="https://www.postgresql.org/download/">https://www.postgresql.org/download/</a></p></div>
+<div class="section">
+<h3><a name="SQL_Server"></a>SQL Server</h3>
+<p>Nothing special should be needed - the SQL scripting binaries should be included by default on Windows (tested on Windows 7 and 10). Please reach out to the Obevo team if you have issues.</p></div>
+<div class="section">
+<h3><a name="Oracle"></a>Oracle</h3>
+<p>Nothing special should be needed - the reverse engineering is executed via native Java and Oracle SQL calls. Please reach out to the Obevo team if you have issues.</p></div></div>
         </div>
       </div>
     </div>
