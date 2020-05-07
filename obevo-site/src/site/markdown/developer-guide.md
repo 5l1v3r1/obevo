@@ -110,9 +110,9 @@ Your own method:
 Obevo will run tests against actual DBMSs that have schemas dedicated to Obevo.
 Get a schema to facilitate your testing
 
-As a convention, name your schemas as dbdeploy01, dbdeploy02, dbdeploy03.
+As a convention, name your schemas as dbdeploy01, dbdeploy02, dbdeploymeta.
 * dbdeploy01 and dbdeploy02 are typically for testing your deployments
-* dbdeploy03 is for the metadata API tests
+* dbdeploymeta is for the metadata API tests
 
 #### 5. Setup your initial test files
 
