@@ -22,16 +22,16 @@ environments:
     # NOTE - all these files are in PostgreSQL dialect; these files were just copied over. Please correct and edit
     schemas:
       schema:
-      - name: schema1
-      - name: schema2
-      - name: schema3
+      - name: refschema1
+      - name: refschema2
+      - name: refschema3
     schemaOverrides:
       schemaOverride:
-      - schema: schema1
+      - schema: refschema1
         overrideValue: dbdeploy01
-      - schema: schema2
+      - schema: refschema2
         overrideValue: dbdeploy02
-      - schema: schema3
+      - schema: refschema3
         overrideValue: dbdeploy03
     driverClass: com.mysql.cj.jdbc.Driver
     cleanBuildAllowed: true

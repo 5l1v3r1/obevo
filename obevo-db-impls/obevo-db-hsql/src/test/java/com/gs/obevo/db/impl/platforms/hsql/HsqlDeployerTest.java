@@ -56,9 +56,9 @@ public class HsqlDeployerTest {
         int result;
         Connection conn = context.getDataSource().getConnection();
         try {
-            result = this.jdbc.queryForInt(conn, "select count(*) from SCHEMA1.TABLE_A");
+            result = this.jdbc.queryForInt(conn, "select count(*) from REFSCHEMA1.TABLE_A");
             assertEquals(3, result);
-            result = this.jdbc.queryForInt(conn, "select count(*) from SCHEMA1.VIEW1");
+            result = this.jdbc.queryForInt(conn, "select count(*) from REFSCHEMA1.VIEW1");
             assertEquals(3, result);
             // String columnListSql =
             // "select name from syscolumns where id in (select id from sysobjects where name = 'TEST_TABLE')";
@@ -70,7 +70,7 @@ public class HsqlDeployerTest {
 
         // Test out reverse engineering
         AquaRevengArgs args = new AquaRevengArgs();
-        args.setDbSchema("SCHEMA1");
+        args.setDbSchema("REFSCHEMA1");
         args.setGenerateBaseline(false);
         //args.setJdbcUrl("jdbc:hsqldb:hsql://localhost:9092/myserver");
         args.setJdbcUrl(env.getJdbcUrl());
@@ -105,9 +105,9 @@ public class HsqlDeployerTest {
         this.setup();
         Connection conn = context.getDataSource().getConnection();
         try {
-            result = this.jdbc.queryForInt(conn, "select count(*) from SCHEMA1.TABLE_A");
+            result = this.jdbc.queryForInt(conn, "select count(*) from REFSCHEMA1.TABLE_A");
             assertEquals(3, result);
-            result = this.jdbc.queryForInt(conn, "select count(*) from SCHEMA1.VIEW1");
+            result = this.jdbc.queryForInt(conn, "select count(*) from REFSCHEMA1.VIEW1");
             assertEquals(3, result);
         } finally {
             DbUtils.closeQuietly(conn);

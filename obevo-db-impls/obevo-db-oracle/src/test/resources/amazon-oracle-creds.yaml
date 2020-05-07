@@ -21,16 +21,16 @@ environments:
     sourcePath: platforms/oracle/example1/step${stepNumber}
     schemas:
       schema:
-      - name: schema1
-      - name: schema2
-      - name: schema3
+      - name: refschema1
+      - name: refschema2
+      - name: refschema3
     schemaOverrides:
       schemaOverride:
-      - schema: schema1
+      - schema: refschema1
         overrideValue: DBDEPLOY01
-      - schema: schema2
+      - schema: refschema2
         overrideValue: DBDEPLOY02
-      - schema: schema3
+      - schema: refschema3
         overrideValue: DBDEPLOY03
     driverClass: oracle.jdbc.OracleDriver
     cleanBuildAllowed: true

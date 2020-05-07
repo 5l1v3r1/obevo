@@ -21,11 +21,11 @@ environments:
     sourcePath: platforms/mssql/step${stepNumber}
     schemas:
       schema:
-      - name: oats
+      - name: refschema1
       - name: schemaOnlyForSetup
     schemaOverrides:
       schemaOverride:
-      - schema: oats
+      - schema: refschema1
         overrideValue: dbdeploy01
       - schema: schemaOnlyForSetup   # setting this up so that we can have the metaschema setup as well. ParamReader class needs improvement to avoid this hack
         overrideValue: dbdeploy03
@@ -37,14 +37,14 @@ environments:
     defaultPassword: Deploybuilddb0!
 #  - name: v13_schema
 #    type: MSSQL
-#    metaschema: dbdeploy03.schema3
+#    metaschema: dbdeploy03.refschema3
 #    sourcePath: platforms/mssql/step${stepNumber}
 #    schemas:
 #      schema:
-#      - name: oats
+#      - name: refschema1
 #    schemaOverrides:
 #      schemaOverride:
-#      - schema: oats
+#      - schema: refschema1
 #        overrideValue: dbdeploy01.schema1
 #    driverClass: com.microsoft.sqlserver.jdbc.SQLServerDriver
 #    cleanBuildAllowed: true
