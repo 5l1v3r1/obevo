@@ -17,8 +17,8 @@
 -->
 <dbSystemConfig type="POSTGRESQL" sourceDirs="platforms/postgresql/example1/step1">
     <schemas>
-        <schema name="refschema1" />
-        <schema name="refschema2" />
+        <schema name="dbdeploy01" />
+        <schema name="dbdeploy02" />
     </schemas>
     <environments>
         <dbEnvironment name="unittestrefh2" cleanBuildAllowed="true" />

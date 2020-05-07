@@ -17,7 +17,7 @@
 -->
 <dbSystemConfig type="SYBASE_IQ">
     <schemas>
-        <schema name="refschema1" />
+        <schema name="dbdeploy01" />
     </schemas>
     <environments>
         <dbEnvironment name="h2test" type="DEV" cleanBuildAllowed="true" />

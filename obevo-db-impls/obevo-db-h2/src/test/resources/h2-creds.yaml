@@ -18,12 +18,12 @@ environments:
   environment:
   - name: default
     type: H2
-    metaschema: REFSCHEMA2
+    metaschema: DBDEPLOY02
     sourcePath: platforms/h2/step${stepNumber}
     schemas:
       schema:
-      - name: REFSCHEMA1
-      - name: REFSCHEMA2
+      - name: DBDEPLOY01
+      - name: DBDEPLOY02
     jdbcUrl: jdbc:h2:mem:BLAH;DB_CLOSE_DELAY=-1
     dbServer: BLAH
     defaultUserId: sa

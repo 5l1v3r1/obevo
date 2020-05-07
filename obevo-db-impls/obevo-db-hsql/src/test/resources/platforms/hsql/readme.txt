@@ -18,4 +18,4 @@ note - hsql will ignore stored procs as it is in-memory DB. We leave them here t
 
 This is copied from the db2new/step1 example
 
-We add the REFSCHEMA2 directory here to ensure that we can handle the case of the same view object name existing in different schemas w/out conflicts
+We add the DBDEPLOY02 directory here to ensure that we can handle the case of the same view object name existing in different schemas w/out conflicts

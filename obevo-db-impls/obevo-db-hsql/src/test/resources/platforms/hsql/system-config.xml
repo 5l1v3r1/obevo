@@ -17,8 +17,8 @@
 -->
 <dbSystemConfig type="HSQL">
     <schemas>
-        <schema name="REFSCHEMA1" />
-        <schema name="REFSCHEMA2" />
+        <schema name="DBDEPLOY01" />
+        <schema name="DBDEPLOY02" />
     </schemas>
     <groups>
         <group name="GROUP1" />
