@@ -18,7 +18,7 @@ environments:
   - name: testdefault
     type: MYSQL
     metaschema: metaschema
-    sourcePath: platforms/mysql/example1/step${stepNumber}
+    sourcePath: platforms/mysql/step${stepNumber}
     # NOTE - all these files are in PostgreSQL dialect; these files were just copied over. Please correct and edit
     schemas:
       schema:

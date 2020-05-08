@@ -41,7 +41,7 @@ public class HsqlDeployerTest {
 
     @Test
     public void testDeploy() throws Exception {
-        DbEnvironment env = Obevo.readEnvironment("./src/test/resources/platforms/hsql");
+        DbEnvironment env = Obevo.readEnvironment("./src/test/resources/platforms/hsql/step1");
         DbDeployerAppContext context = env.buildAppContext("sa", "");
 
         context.setupEnvInfra();
@@ -89,7 +89,7 @@ public class HsqlDeployerTest {
         DbDeployerAppContext context = UnitTestDbBuilder.newBuilder()
                 .setEnvName("test2")
                 .setDbPlatform(new HsqlDbPlatform())
-                .setSourcePath("platforms/hsql")
+                .setSourcePath("platforms/hsql/step1")
                 .setDbServer("HsqlCustomName")
                 .buildContext();
         context.setupEnvInfra();

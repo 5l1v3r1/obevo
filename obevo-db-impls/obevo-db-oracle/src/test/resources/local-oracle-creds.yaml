@@ -18,7 +18,7 @@ environments:
   - name: test_v12_1
     type: ORACLE
     metaschema: metaschema
-    sourcePath: platforms/oracle/example1/step${stepNumber}
+    sourcePath: platforms/oracle/step${stepNumber}
     schemas:
       schema:
       - name: dbdeploy01

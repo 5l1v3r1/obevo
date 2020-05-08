@@ -26,4 +26,4 @@ environments:
       schema:
       - name: DBDEPLOY01
       - name: DBDEPLOY02
-    sourcePath: platforms/hsql
+    sourcePath: platforms/hsql/step1

@@ -15,7 +15,7 @@
     under the License.
 
 -->
-<dbSystemConfig type="POSTGRESQL" sourceDirs="platforms/postgresql/example1/step1">
+<dbSystemConfig type="POSTGRESQL" sourceDirs="platforms/memsql/step1">
     <schemas>
         <schema name="dbdeploy01" />
         <schema name="dbdeploy02" />
